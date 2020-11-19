@@ -4,5 +4,4 @@
 
 #### todo
 - make this a proper python library
-- implement writer for .mat
 - implement parser+writer for .fp, .enh, .cei, .msc, .pnv, .idl, .stk, .config and .monte

@@ -1,5 +1,3 @@
-import pprint
-
 """
 {
     1989: [
@@ -110,3 +108,9 @@ def parse_mat(file):
                 4: (float(row[5]),float(row[6]))
             }
     return years
+
+def write_mat(data,file):
+    for yr, stocks in sorted(data.items()):
+        file.write(f"{yr}\n")
+        for name,stock in sorted(stocks.items()):
+            file.write(f"      {name},     {stock[2][0]:6.4f}    {stock[2][1]:6.4f}    {stock[3][0]:6.4f}    {stock[3][1]:6.4f}    {stock[4][0]:6.4f}    {stock[4][1]:6.4f}\n")
