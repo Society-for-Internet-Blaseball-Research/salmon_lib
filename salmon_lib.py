@@ -110,7 +110,3 @@ def parse_mat(file):
                 4: (float(row[5]),float(row[6]))
             }
     return years
-
-with open("salmon.blall") as f:
-    results = parse_stock_file(f)
-    pprint.pprint(results)
