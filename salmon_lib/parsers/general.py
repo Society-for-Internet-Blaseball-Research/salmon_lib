@@ -208,13 +208,6 @@ just...just a three-dimensional array?
 
 def parse_fp(file):
     """parse .fp files"""
-    a = [[]]
-    i = 0
-    for line in file:
-        row = line.split()
-        if len(row) > 0:
-            a[i].append([float(s) for s in row])
-        else:
-            a.append([])
-            i += 1
-    return a[:-1]
+    slices = file.read().strip().replace('\r', '').split('\n\n')
+    return [[[float(s) for s in line.split()] for line in slice.splitlines()]
+            for slice in slices]
