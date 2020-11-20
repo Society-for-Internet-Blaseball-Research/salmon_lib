@@ -1,11 +1,11 @@
 # salmon_lib
 ### a library to read and write CRiSP harvest files
-**[A SIBR Project](https://sibr.dev)**
+**[A SIBR Project](https://sibr.dev)** <br />
 *born out of [the saga of salmon steve](https://salmon.sibr.dev/steve.html)*
 <br />
 
 
-###credits & contributors
+### credits & contributors
 - **[The CRiSP Harvest Team](www.cbr.washington.edu/analysis/archive/harvest/crispharvest)**
 - **[ubuntor, who wrote the .zhp module](https://github.com/ubuntor)**
 
