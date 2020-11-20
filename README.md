@@ -31,7 +31,6 @@
 - `.fp`
 - `.enh`
 - `.cei`
-- `.pnv`
 - `.idl`
 - `.config`
 - `.monte`
