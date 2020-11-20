@@ -38,8 +38,8 @@ Usage:
 - `.evo`
 - `.stk`
 - `.zhp`
+- `.bse` 
 - `.prn` (read-only)
-- `.bse` (read-only)
 
 **missing formats**
 - `.fp`
