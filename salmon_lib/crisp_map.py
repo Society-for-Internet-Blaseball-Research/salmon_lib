@@ -7,10 +7,10 @@ from math import floor
 Python script for generating a valid `map.dat` file for use in CRiSP Harvest v3.0.6.
 
 Usage:
-  `python build_crisp_map.py > map.dat`
+  `python -m salmon_lib.crisp_map > map.dat`
 
 If you want to display the map in the CRiSP Harvest Simulator Simulator:
-  `python build_crisp_map.py display`
+  `python -m salmon_lib.crisp_map display`
 
 
 Map credits:
@@ -444,7 +444,7 @@ def latlonstr(num):
   return '%02d %02d %02d' % (degrees, minutes, seconds)
 
 if __name__ == '__main__':
-  with open('crisp_map_data.json') as f:
+  with open('resources/crisp_map_data.json') as f:
     crisp_map_data = json.load(f)
   add_north_america(crisp_map_data['north_america'])
   add_hawaii(crisp_map_data['hawaii'])
