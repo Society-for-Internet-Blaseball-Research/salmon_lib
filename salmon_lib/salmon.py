@@ -385,8 +385,3 @@ def write_config(data,file):
 {data['input']['monte']['file']}
 {upper_y(data['additional_slcm'])} ,  additional save stats for slcm?
 {upper_y(data['in_river'])} ,  in-river management"""[1:])
-
-with open('fish.opt') as f:
-    results = parse_config(f)
-    with open('out_salmon.opt','w',newline='\r\n') as ft:
-        write_config(results,ft)
