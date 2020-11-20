@@ -7,7 +7,7 @@ setup(name='salmon_lib',
       author='alisww',
       author_email='waylandalis@gmail.com',
       license='MIT',
-      packages=['salmon_lib'],
+      packages=['salmon_lib','salmon_lib.parsers'],
       install_requires=[
             'matplotlib==3.3.3'
       ],
