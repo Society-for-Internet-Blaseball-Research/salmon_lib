@@ -7,8 +7,8 @@
 
 ### credits & contributors
 - **[The CRiSP Harvest Team](www.cbr.washington.edu/analysis/archive/harvest/crispharvest)**
-- **[alisw, parsers+writers](https://github.com/alisww)**
 - **[ubuntor, who wrote the zhp module](https://github.com/ubuntor)**
+- **[alisww, parsers+writers](https://github.com/alisww)**
 
 ### features & todo
 **todo**
