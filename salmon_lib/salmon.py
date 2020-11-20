@@ -234,6 +234,40 @@ def write_stk(abbrevs,data,file):
                 file.write(f"{a:12.8E}  ")
             file.write("\n")
 
+def parse_msc(file):
+    """
+    format:
+    {'maturation_file': 'input/hanford.mat',
+     'stocks': [('AKS', 'Alaska Spring'),
+            ('BON', 'Bonneville'),
+            ('CWF', 'Cowlitz Fall'),
+            ('GSH', 'Georgia Strait Hatchery'),
+            ('LRW', 'Lewis River Wild'),
+            ('ORC', 'Oregon Coastal'),
+            ('RBH', 'Robertson Creek Hatchery'),
+            ('RBT', 'WCVI Wild'),
+            ('SPR', 'Spring Creek'),
+            ('URB', 'Columbia River Upriver Bright'),
+            ('WSH', 'Willamette Spring')]}
+    """
+
+    msc = {
+        "maturation_file": next(file).split()[0],
+        "stocks": []
+    }
+
+    for line in file:
+        row = line.split(',')
+        msc["stocks"].append((row[0],row[1].strip()))
+
+    return msc
+
+def write_msc(data,file):
+    file.write(f"{data['maturation_file']} , Name of maturation data file\n")
+    for stock in data['stocks']:
+        file.write(f"{stock[0]},   {stock[1]}\n")
+
+# TODO: document this
 def parse_config(file):
     def cfg_row(l):
         return l.split(',')[0].strip()

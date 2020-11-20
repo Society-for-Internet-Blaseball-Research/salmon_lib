@@ -27,7 +27,6 @@
 - .fp
 - .enh
 - .cei
-- .msc
 - .pnv
 - .idl
 - .config
