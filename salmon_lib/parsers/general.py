@@ -190,3 +190,31 @@ def write_pnv(data,f):
         for value in age_row:
             f.write(f"{value:6.4f}  ") # 6 digits (counting .) total floats; 4 decimal places
         f.write("\n")
+
+
+"""
+*.fp file format:
+The *.fp files are used for detailed Fishery Policy (Harvest Rate) scalars that
+alter the impact of a given fishery on the stocks on a year-by-year basis. The
+format is to place all of the FP values in a block for a year. Each year has a
+separate block. Within each block the 30 rows are for the 30 stocks and each of
+the 25 columns is one of the fisheries. There are no other flags, values or
+tokens in this file.
+
+lord what kind of structure should this return though
+just...just a three-dimensional array?
+"""
+
+
+def parse_fp(file):
+    """parse .fp files"""
+    a = [[]]
+    i = 0
+    for line in file:
+        row = line.split()
+        if len(row) > 0:
+            a[i].append([float(s) for s in row])
+        else:
+            a.append([])
+            i += 1
+    return a[:-1]
