@@ -28,10 +28,10 @@
 - `.bse` (read-only)
 
 **missing formats**
-- .fp
-- .enh
-- .cei
-- .pnv
-- .idl
-- .config
-- .monte
+- `.fp`
+- `.enh`
+- `.cei`
+- `.pnv`
+- `.idl`
+- `.config`
+- `.monte`
