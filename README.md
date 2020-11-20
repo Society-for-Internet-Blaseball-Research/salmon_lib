@@ -27,12 +27,11 @@
 - `.prn` (read-only)
 - `.bse` (read-only)
 
-**Missing formats**
-- `.fp`
-- `.enh`
-- `.cei`
-- `.msc`
-- `.pnv`
-- `.idl`
-- `.config`
-- `.monte`
+**missing formats**
+- .fp
+- .enh
+- .cei
+- .pnv
+- .idl
+- .config
+- .monte
