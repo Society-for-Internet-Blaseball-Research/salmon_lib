@@ -182,6 +182,8 @@ class FisheryBuilder:
 class StockBuilder:
     def __init__(self,sim,config=None):
         # do something with config
+        self.rates = []
+        self.policies = []
         self.sim = sim
 
     @builder
