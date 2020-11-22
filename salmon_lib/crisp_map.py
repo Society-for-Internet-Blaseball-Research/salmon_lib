@@ -1,6 +1,8 @@
 import json
 import matplotlib.pyplot as plt
 import sys
+import salmon_lib.resources
+import importlib.resources
 from math import floor
 
 """
@@ -460,7 +462,7 @@ def latlonstr(num):
 
 
 if __name__ == "__main__":
-    with open("resources/crisp_map_data.json") as f:
+    with importlib.resources.open_text(salmon_lib.resources,"crisp_map_data.json") as f:
         crisp_map_data = json.load(f)
     add_north_america(crisp_map_data["north_america"])
     add_hawaii(crisp_map_data["hawaii"])

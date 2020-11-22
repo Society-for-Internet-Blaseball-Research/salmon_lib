@@ -1,5 +1,6 @@
 # This is all extremely WIP, and not in working state.
 from salmon_lib.parsers import *
+import salmon_lib.resources
 """
 ## .bse:
 - Name
@@ -72,7 +73,7 @@ class Sim:
     def __init__(self):
         self.stocks = []
         self.fisheries = []
-        
+
     def build_fp(self):
         array = [[[[] for i in range(len(self.fisheries))] for j in range(len(self.stocks))] for k in range(len(self.stocks[0].policies))] # allocate array as long as the first stock's amount of defined years
         for i,stock in enumerate(self.stocks):
@@ -190,7 +191,7 @@ class FisheryBuilder:
             elif isinstance(year, float):  # year is a single float
                 for stock in sim.stocks:
                     self.sim.stocks[self.stock_index(stock.abbreviation)].policy(i,year)
-                    
+
         self.sim.fisheries.append(self)
         return self.sim.fisheries[-1]
 
