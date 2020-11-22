@@ -213,3 +213,12 @@ def parse_fp(file):
     slices = file.read().strip().replace('\r', '').split('\n\n')
     return [[[float(s) for s in line.split()] for line in slice.splitlines()]
             for slice in slices]
+
+
+def write_fp(data, f):
+    for year in data:
+        for fishery in year:
+            f.write(" ")
+            f.write(" ".join([f"{stock:10.8f}" for stock in fishery]))
+            f.write("\n")
+        f.write("\n")
