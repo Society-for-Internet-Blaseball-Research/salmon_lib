@@ -9,7 +9,7 @@ def parse_bse(file):
         'maximum_ocean_age': int(lines[1]),
         'number_of_fisheries': int(lines[2]),
         'initial_year': int(lines[3]), # hardcoded at 1979, apparently?
-        'net_catche_maturity_age': int(lines[4]), # at line 5,
+        'net_catch_maturity_age': int(lines[4]), # at line 5,
         'natural_mortality_by_age': [], # ages (1,2,3,4,5)
         'incidental_mortality': [], # incidental_mortality rates for troll, net, sport
         'fisheries': [],
@@ -67,7 +67,7 @@ def parse_bse(file):
         'maximum_ocean_age': int(lines[1]),
         'number_of_fisheries': int(lines[2]),
         'initial_year': int(lines[3]), # hardcoded at 1979, apparently?
-        'net_catche_maturity_age': int(lines[4]), # at line 5,
+        'net_catch_maturity_age': int(lines[4]), # at line 5,
         'natural_mortality_by_age': [], # ages (1,2,3,4,5)
         'incidental_mortality': [], # incidental_mortality rates for troll, net, sport
         'fisheries': [],
@@ -83,7 +83,7 @@ def write_bse(data,file):
  {data['maximum_ocean_age']}
  {data['number_of_fisheries']}
  {data['initial_year']}
- {data['net_catche_maturity_age']}\n"""[1:])
+ {data['net_catch_maturity_age']}\n"""[1:])
 
     for fishery in data['fisheries']:
         file.write(f"{fishery['name']}\n")
