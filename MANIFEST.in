@@ -1,1 +1,1 @@
-recursive-include resources *.json
+include salmon_lib/resources/*.json

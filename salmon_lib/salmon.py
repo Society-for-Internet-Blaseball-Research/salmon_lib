@@ -1,4 +1,5 @@
 # This is all extremely WIP, and not in working state.
+from salmon_lib.parsers import *
 """
 ## .bse:
 - Name
@@ -68,6 +69,16 @@ class Sim:
     def __init__(self):
         self.stocks = []
         self.fisheries = []
+
+    def build_fp(self):
+        array = [[[[] for i in range(len(self.fisheries))] for j in range(len(self.stocks))] for k in range(len(self.stocks[0].policies))] # allocate array as long as the first stock's amount of defined years
+        for i,stock in enumerate(self.stocks):
+            for j,year in enumerate(stock.policies):
+                array[j][i] = year
+        return array
+
+
+        #print(array)
 
 class FisheryBuilder:
     def __init__(self,sim,config=None):
@@ -143,12 +154,13 @@ class FisheryBuilder:
                 self.sim.stocks[stock_index].exploitation(rate)
 
         for i,year in enumerate(self.policy):
+        #    print('yr' + str(year))
             if isinstance(year,list): # year is a list of tuples
                 default = None
                 done = []
                 for rate in year:
                     stock = rate[0]
-                    print(stock)
+                #    print('stock'+str(stock))
                     if stock == "default":
                         default = rate[1]
                     else:
@@ -156,7 +168,7 @@ class FisheryBuilder:
                         stock_index = self.stock_index(stock)
                         self.sim.stocks[stock_index].policy(i,rate[1])
 
-                for stock in sim.stocks:
+                for stock in self.sim.stocks:
                     if stock.abbreviation in done:
                         pass
                     else:
@@ -171,16 +183,18 @@ class FisheryBuilder:
                         self.done.append(stock)
                         stock_index = stock_index(stock)
                         self.sim.stocks[stock_index].policy(i,rate)
-                for stock in sim.stocks:
+                for stock in self.sim.stocks:
                     if stock.abbreviation in done:
                         pass
                     else:
                         stock.policy(i,default)
             elif isinstance(year,float): # year is a single float
                 for stock in sim.stocks:
-                    self.sim.stocks[stock_index].policy(i,year)
+                #    print(year)
+                    self.sim.stocks[self.stock_index(stock.abbreviation)].policy(i,year)
 
-        sim.fisheries.append(self)
+        self.sim.fisheries.append(self)
+        return self.sim.fisheries[-1]
 
 class StockBuilder:
     def __init__(self,sim,config=None):
@@ -296,9 +310,19 @@ class StockBuilder:
     def policy(self,year,list):
         if len(self.policies) <= year:
             self.policies += ([[]] * ((year + 1) - len(self.policies)))
+    #    print("l" + str(list))
+    #    print(self.policies)
+        print(list)
         self.policies[year].append(list)
+        print(self.policies)
+    #    print('p' + str(self.policies))
 
     def build(self):
         self.sim.stocks.append(self)
         self.index = len(sim.stocks) - 1
         return self.sim.stocks[-1]
+
+#sim = Sim()
+#stock = StockBuilder(sim).name("Salmon Institute").abbrev("SIBR").hatchery(True).build()
+
+#fishery = FisheryBuilder(sim).name("Society for Salmon").exploits([("SIBR",[1,2,3,4])]).policy([1.0,2.0]).build()
