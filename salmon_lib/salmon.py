@@ -156,7 +156,7 @@ class FisheryBuilder:
                         stock_index = self.stock_index(stock)
                         self.sim.stocks[stock_index].policy(i,rate[1])
 
-                for stock in sim.stocks:
+                for stock in self.sim.stocks:
                     if stock.abbreviation in done:
                         pass
                     else:
@@ -177,10 +177,11 @@ class FisheryBuilder:
                     else:
                         stock.policy(i,default)
             elif isinstance(year,float): # year is a single float
-                for stock in sim.stocks:
+                for stock in self.sim.stocks:
                     self.sim.stocks[stock_index].policy(i,year)
 
-        sim.fisheries.append(self)
+        self.sim.fisheries.append(self)
+        return self.sim.fisheries[-1]
 
 class StockBuilder:
     def __init__(self,sim,config=None):
@@ -300,5 +301,5 @@ class StockBuilder:
 
     def build(self):
         self.sim.stocks.append(self)
-        self.index = len(sim.stocks) - 1
+        self.index = len(self.sim.stocks) - 1
         return self.sim.stocks[-1]
