@@ -1,7 +1,8 @@
 # i have no idea what i'm doing
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, replace, field
+from typing import List
 import struct
 
 def u32(b):
@@ -48,7 +49,22 @@ class Style(Serializable):
     start: int
     end: int
     type: int
-    extra_info: int
+    extra_info: int = 0
+
+    STYLE_LINK = 0x01
+    STYLE_BOLD = 0x03
+    STYLE_ITALICS = 0x04
+    STYLE_MONO = 0x06
+    STYLE_H1 = 0x08
+    STYLE_H2 = 0x09
+    STYLE_H3 = 0x0a
+    STYLE_H4 = 0x0b
+    STYLE_H5 = 0x0c
+    STYLE_H6 = 0x0d
+    STYLE_IMAGE = 0x0f
+    STYLE_OL = 0x11
+    STYLE_UL = 0x15
+    STYLE_CODEBLOCK = 0x20
 
     @classmethod
     def parse(cls, b):
@@ -63,9 +79,13 @@ class Style(Serializable):
 
 @dataclass
 class Line(Serializable):
-    text: bytes
-    unknown_fields: list
-    styles: list
+    text: bytes = b''
+    unknown_fields: List[int] = field(default_factory=lambda: [0,0,0,0,0,0,0,0])
+    styles: List[Style] = field(default_factory=list)
+
+    @classmethod
+    def make_hrule(cls):
+        return cls(unknown_fields=[1,0,0,0,0,1,0,0])
 
     @classmethod
     def parse(cls, b):
@@ -93,13 +113,27 @@ class Line(Serializable):
         b += b'\xff\xff\x00\x00'*4
         return b
 
+    # takes the unknown_fields of the left argument
+    # mutability is hard
+    def __add__(self, other):
+        text = self.text + other.text
+        unknown_fields = self.unknown_fields
+        styles = []
+        for i in self.styles:
+            styles.append(replace(i)) # copy?
+        for i in other.styles:
+            start = i.start + len(self.text)
+            end = i.end + len(self.text)
+            styles.append(replace(i, start=start, end=end))
+        return Line(text=text, unknown_fields=unknown_fields, styles=styles)
+
 @dataclass
 class Page(Serializable):
     title: bytes
     title_id: int # ???
     page_name: bytes
     page_id: int # ???
-    lines: list
+    lines: List[Line]
     
     @classmethod
     def parse(cls, b):
@@ -155,7 +189,7 @@ class TOCEntry(Serializable):
 
 @dataclass
 class TOC(Serializable):
-    toc: list
+    toc: List[TOCEntry]
 
     @classmethod
     def parse(cls, b):
@@ -189,7 +223,7 @@ class Link(Serializable):
 
 @dataclass
 class Links(Serializable):
-    links: list
+    links: List[Link]
 
     @classmethod
     def parse(cls, b):
@@ -225,7 +259,7 @@ class DirectoryEntry(Serializable):
 
 @dataclass
 class Directory(Serializable):
-    directory: list
+    directory: List[DirectoryEntry]
 
     @classmethod
     def parse(cls, b):

@@ -17,7 +17,6 @@ if __name__ == '__main__':
                         help="longitude bounds. Note that these are negated (degrees W)", required=True)
 
     args = parser.parse_args()
-    print(args)
 
     lat = args.lat
     lon = args.lon
