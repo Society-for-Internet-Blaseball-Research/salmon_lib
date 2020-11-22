@@ -38,13 +38,13 @@ Usage:
 - `.evo`
 - `.stk`
 - `.zhp`
+- `.bse`
+- `.idl`
+- `.enh`
 - `.prn` (read-only)
-- `.bse` (read-only)
 
 **missing formats**
 - `.fp`
-- `.enh`
 - `.cei`
-- `.idl`
 - `.config`
 - `.monte`

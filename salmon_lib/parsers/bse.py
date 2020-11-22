@@ -51,16 +51,68 @@ def parse_bse(file):
         match = stock_r.match(line.strip())
         bse['stocks'].append({
             'name': match.group(1), # Stock name
-            'production_param': match.group(2), # Production parameter A Ricker A value for natural stocks Productivity for hatchery stocks
-            'msy_esc_estimate': match.group(3), # Estimate of MSY escapement
-            'idl': match.group(4), # IDLs for calibration runs only
+            'production_param': float(match.group(2)), # Production parameter A Ricker A value for natural stocks Productivity for hatchery stocks
+            'msy_esc_estimate': int(match.group(3)), # Estimate of MSY escapement
+            'idl': float(match.group(4)), # IDLs for calibration runs only
             'hatchery_flag': bool(int(match.group(5))), # Flag for hatchery stocks
             'msh_esc_flag': bool(int(match.group(6))), # MSH escapement flag; true/1 truncates at maximum,  false/0 truncates at optimum
             'id': match.group(7), # stock abbreviation
-            'age_conversion': match.group(8) # age 2 to 1 conversion factor
+            'age_conversion': float(match.group(8)) # age 2 to 1 conversion factor
         })
         abbrevs.append(match.group(7))
     return (abbrevs,bse)
+
+    bse = {
+        'number_of_stocks': int(lines[0]),
+        'maximum_ocean_age': int(lines[1]),
+        'number_of_fisheries': int(lines[2]),
+        'initial_year': int(lines[3]), # hardcoded at 1979, apparently?
+        'net_catche_maturity_age': int(lines[4]), # at line 5,
+        'natural_mortality_by_age': [], # ages (1,2,3,4,5)
+        'incidental_mortality': [], # incidental_mortality rates for troll, net, sport
+        'fisheries': [],
+        'ocean_net_fisheries': [], # this is a list of bools. true indicates an ocean net fishery. yeah idk either
+        'terminal_fisheries': [], # rows are stocks, containing a list of booleans. true indicates a terminal fishery. idk²
+        'stocks': []
+    }
+
+def write_bse(data,file):
+    file.write(
+    f"""
+ {data['number_of_stocks']}
+ {data['maximum_ocean_age']}
+ {data['number_of_fisheries']}
+ {data['initial_year']}
+ {data['net_catche_maturity_age']}\n"""[1:])
+
+    for fishery in data['fisheries']:
+        file.write(f"{fishery['name']}\n")
+
+    for fishery in data['fisheries']:
+        for scalar in fishery['proportions_non_vulnerable']:
+            file.write(f"{scalar:7.5f}  ")
+        file.write("\n")
+
+    for mortality in data['natural_mortality_by_age']:
+        file.write(f"{mortality:3.1f} ")
+    file.write("\n")
+
+    for mortality in data['incidental_mortality']:
+        file.write(f"{mortality:3.1f} ")
+    file.write("\n")
+
+    for mortality in data['ocean_net_fisheries']:
+        file.write(f"{int(mortality)}  ")
+    file.write("\n")
+
+    for terminal_row in data['terminal_fisheries']:
+        for terminal_flag in terminal_row:
+            file.write(f"{int(terminal_flag)}  ")
+        file.write("\n")
+
+    for stock in data['stocks']:
+        file.write(f"{stock['name']} , {stock['production_param']:5.3f}    {stock['msy_esc_estimate']}  {stock['idl']:4.2f}   {int(stock['hatchery_flag'])}  {int(stock['msh_esc_flag'])}  ,{stock['id']} ,{stock['age_conversion']:7.5f}")
+        file.write("\n")
 
 """
 {
