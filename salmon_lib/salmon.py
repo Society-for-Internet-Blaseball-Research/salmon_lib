@@ -106,19 +106,20 @@ class FisheryBuilder:
         self.exploitations = exploitations
 
     """
-    [
-        ('AKS',scalar),
-        ...
+    [ # years
+        [
+            ('AKS',scalar),
+            ...
+        ]
     ]
 
-    [
+    [ # years
         {
             'AKS': scalar
-        },
-        ...
-        ]
+        }
+    ]
 
-    [
+    [ # years
         1.0 # applies to all stocks
     ]
     """
@@ -141,12 +142,13 @@ class FisheryBuilder:
                 stock_index = self.stock_index(stock)
                 self.sim.stocks[stock_index].exploitation(rate)
 
-        for (i,year) in self.policy:
-            if isinstance(year,list):
+        for i,year in enumerate(self.policy):
+            if isinstance(year,list): # year is a list of tuples
                 default = None
                 done = []
                 for rate in year:
                     stock = rate[0]
+                    print(stock)
                     if stock == "default":
                         default = rate[1]
                     else:
@@ -159,13 +161,14 @@ class FisheryBuilder:
                         pass
                     else:
                         stock.policy(i,default)
-            elif isinstance(year,dict):
+            elif isinstance(year,dict): # year is a dictionary
                 default = year.get("default")
                 done = []
                 for stock,rate in enumerate(year):
                     if stock == "default":
                         pass
                     else:
+                        self.done.append(stock)
                         stock_index = stock_index(stock)
                         self.sim.stocks[stock_index].policy(i,rate)
                 for stock in sim.stocks:
@@ -173,7 +176,7 @@ class FisheryBuilder:
                         pass
                     else:
                         stock.policy(i,default)
-            elif isinstance(year,float):
+            elif isinstance(year,float): # year is a single float
                 for stock in sim.stocks:
                     self.sim.stocks[stock_index].policy(i,year)
 
@@ -292,7 +295,7 @@ class StockBuilder:
 
     def policy(self,year,list):
         if len(self.policies) <= year:
-            self.policies + ([] * ((year + 1) - len(self.policies)))
+            self.policies += ([[]] * ((year + 1) - len(self.policies)))
         self.policies[year].append(list)
 
     def build(self):
