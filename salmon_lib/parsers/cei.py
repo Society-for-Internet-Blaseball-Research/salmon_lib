@@ -45,6 +45,20 @@ def parse_cei(file):
         "fishery": []
     }
 
-    # and then a miracle occurs...
-
+    # now for the fun stuff. From some file-surgery testing, I believe that
+    # CRiSP Harvest expects a comment line before each fishery, and skips it.
+    # Next, it requires a line the fishery ID number. Then, it requires one
+    # line for every year from start_base to the end of ceil_change_years.
+    # I think. Or, uh...well, let's just say for now that it expects the end of
+    # ceil_change_years to be the last year listed.
+    i = 7
+    while i < len(lines):
+        i += 1
+        # it's too late to write code. notes: go through and populate a dict?
+        # fishery = {
+        # id = (int),
+        # years = [{year: int, catch: int, note: str}, ...]
+        # num_force: int,
+        # years_force: [list of ints, len=num_force]
+        # }
     return cei
