@@ -1,4 +1,6 @@
 import re
+import tempfile
+import os
 
 # TODO: document this
 def parse_config(file):
@@ -12,6 +14,7 @@ def parse_config(file):
 
     abd = 20+int(cfg_row(lines[20])) # amount of abundance indice lines
     end = abd+17+int(cfg_row(lines[abd+17])) # end of pnv files
+
     config = {
         'model_start_year': int(cfg_row(lines[1])),
         'sim_start_year': int(cfg_row(lines[end+5])),
@@ -102,8 +105,12 @@ def write_config(data,file):
 {data['input']['maturation']} ,  MATURATION FILE
 {data['use_9525_evs']} ,  USE EVS FROM CALIBRATION 9525
 {data['input']['ev']}  ,     EV FILE NAME
-{upper_y(data['input']['idl']['enable'])} ,  USE IDL FILE
-{data['input']['idl']['file']} ,     FILE NAME FOR IDL
+{upper_y(data['input']['idl']['enable'])} ,  USE IDL FILE\n"""[1:])
+    if data['input']['idl']['enable']:
+        file.write(f"{data['input']['idl']['file']}\n")
+
+    file.write(
+    f"""
 {upper_y(data['output']['enable'])}  ,  SAVE STATISTICS IN DISK FILES?
 {data['output']['prefix']} ,     PREFIX FOR SAVE FILES
 {num_y(data['output']['catch'])} ,     CATCH STATISTICS  (1=YES)
@@ -131,24 +138,31 @@ def write_config(data,file):
 {data['report']['harvest_rate']} ,     HARVEST RATE (N=No; CO=Cohort Method; TM=Total Mortality Method)
 {num_y(data['report']['compare_base_year'])} ,     COMPARE STATISTICS TO BASE YEAR (1=YES)
 {lower_y(data['report']['document_model'])} ,     DOCUMENT MODEL SETUP (Y/N)
-{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT
-{num_y(data['report']['density_dependence'])} ,     Density Dependence (1=On)
-{data['input']['enh']} ,     FILE FOR ENHANCEMENT SPECS
-{data['input']['cnr']['number']} ,  NUMBER OF CNR FISHERIES
-{data['input']['cnr']['file']} ,     FILE NAME FOR CNR FISHERIES
-{data['input']['pnv']['changes']} ,  NUMBER OF PNV CHANGES\n""")
+{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT\n""")
 
-    for p in data['input']['pnv']['files']:
-        file.write(f"{p} ,     PNV FILE NAME \n")
+    if data['report']['stocks_enhancement'] > 0:
+        file.write(f"{num_y(data['report']['density_dependence'])}\n")
+        file.write(f"{data['input']['enh']}\n")
+
+    file.write(f"{data['input']['cnr']['number']}\n")
+    if data['input']['cnr']['number'] > 0:
+        file.write(f"{data['input']['cnr']['file']}\n")
+
+    file.write(f"{data['input']['pnv']['changes']}\n")
+    if data['input']['pnv']['changes'] > 0:
+        for p in data['input']['pnv']['files']:
+            file.write(f"{p} ,     PNV FILE NAME \n")
 
     file.write(
     f"""
 {data['input']['fp']}   ,  STOCK SPECIFIC FP FILE NAME
 {data['minimum_terminal_age']} ,  MINIMUM AGE FOR TERMINAL RUN STATS (3=Adults; 2=Jacks)
-{upper_y(data['input']['cei']['enable'])} ,  CEILING STRATEGIES
-{data['input']['cei']['file']} ,     FILE NAME FOR CEILING STRATEGY - forced thru 94 only
-{data['sim_start_year']} ,  first simulation year
-{upper_y(data['input']['monte']['enable'])} ,  monte configuration information?
-{data['input']['monte']['file']}
-{upper_y(data['additional_slcm'])} ,  additional save stats for slcm?
-{upper_y(data['in_river'])} ,  in-river management"""[1:])
+{upper_y(data['input']['cei']['enable'])} ,  CEILING STRATEGIES\n"""[1:])
+    if data['input']['cei']['enable']:
+        file.write(f"{data['input']['cei']['file']} ,     FILE NAME FOR CEILING STRATEGY - forced thru 94 only\n")
+    file.write(f"{data['sim_start_year']} ,  first simulation year\n")
+    file.write(f"{upper_y(data['input']['monte']['enable'])} ,  monte configuration information?\n")
+    if data['input']['monte']['enable']:
+        file.write(f"{data['input']['monte']['file']}\n")
+    file.write(f"{upper_y(data['additional_slcm'])}\n")
+    file.write(f"N ,  in-river management\n")
