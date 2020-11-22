@@ -1,5 +1,6 @@
 from .bse import *
 from .opt import *
+from .fp import *
 from .enh import *
 from .evo import *
 from .mat import *
