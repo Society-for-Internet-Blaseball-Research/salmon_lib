@@ -25,6 +25,7 @@ Usage:
 - **[The CRiSP Harvest Team](http://www.cbr.washington.edu/analysis/archive/harvest/crispharvest)**
 - **[ubuntor](https://github.com/ubuntor), zhp module, map bound patcher**
 - **[alisww](https://github.com/alisww), parsers+writers**
+- **[robbyblum](https://github.com/robbyblum), fp parser+writer**
 - **[dannybd](https://github.com/dannybd), CRiSP map data, parser, and CRiSP Harvest Simulator Simulator**
 
 ### Features & TODOs
@@ -38,13 +39,13 @@ Usage:
 - `.evo`
 - `.stk`
 - `.zhp`
-- `.bse` 
+- `.bse`
+- `.idl`
+- `.enh`
 - `.prn` (read-only)
 
 **missing formats**
 - `.fp`
-- `.enh`
 - `.cei`
-- `.idl`
 - `.config`
 - `.monte`
