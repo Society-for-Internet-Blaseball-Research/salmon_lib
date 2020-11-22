@@ -64,9 +64,14 @@ def builder(func):
     return self
   return wrapper
 
+class Sim:
+    def __init__(self):
+        self.stocks = []
+        self.fisheries = []
+
 class FisheryBuilder:
     def __init__(self,sim,config=None):
-        pass
+        self.sim = sim
 
     @builder
     def name(self,name):
@@ -100,18 +105,79 @@ class FisheryBuilder:
     def exploits(self,exploitations):
         self.exploitations = exploitations
 
+    """
+    [
+        ('AKS',scalar),
+        ...
+    ]
+
+    [
+        {
+            'AKS': scalar
+        },
+        ...
+        ]
+
+    [
+        1.0 # applies to all stocks
+    ]
+    """
     @builder
     def policy(self,policy):
         self.policy = policy
-#        if isinstance(exploitations,list):
-#            for rate in exploitations:
-#                stock = rate[0]
-#                stock_index = next(i for i,x in enumerate(self.sim.stocks) if x.abbreviation == stock)
-#                self.sim.stocks[stock_index].exploitation(self.index,rate[1])
-#        elif isinstance(exploitations,dict):
-#            for stock,rate in exploitation:
-#                stock_index = next(i for i,x in enumerate(self.sim.stocks) if x.abbreviation == stock)
-#                self.sim.stocks[stock_index].exploitation(self.index,rate])
+
+
+    def stock_index(self,stock):
+        return next(i for i,x in enumerate(self.sim.stocks) if x.abbreviation == stock)
+
+    def build(self):
+        if isinstance(self.exploitations,list):
+            for rate in self.exploitations:
+                stock_index = self.stock_index(rate[0])
+                self.sim.stocks[stock_index].exploitation(rate[1])
+
+        elif isinstance(self.exploitations,dict):
+            for stock,rate in self.exploitation:
+                stock_index = self.stock_index(stock)
+                self.sim.stocks[stock_index].exploitation(rate)
+
+        for (i,year) in self.policy:
+            if isinstance(year,list):
+                default = None
+                done = []
+                for rate in year:
+                    stock = rate[0]
+                    if stock == "default":
+                        default = rate[1]
+                    else:
+                        done.append(stock)
+                        stock_index = self.stock_index(stock)
+                        self.sim.stocks[stock_index].policy(i,rate[1])
+
+                for stock in sim.stocks:
+                    if stock.abbreviation in done:
+                        pass
+                    else:
+                        stock.policy(i,default)
+            elif isinstance(year,dict):
+                default = year.get("default")
+                done = []
+                for stock,rate in enumerate(year):
+                    if stock == "default":
+                        pass
+                    else:
+                        stock_index = stock_index(stock)
+                        self.sim.stocks[stock_index].policy(i,rate)
+                for stock in sim.stocks:
+                    if stock.abbreviation in done:
+                        pass
+                    else:
+                        stock.policy(i,default)
+            elif isinstance(year,float):
+                for stock in sim.stocks:
+                    self.sim.stocks[stock_index].policy(i,year)
+
+        sim.fisheries.append(self)
 
 class StockBuilder:
     def __init__(self,sim,config=None):
@@ -218,6 +284,14 @@ class StockBuilder:
             self.smolt_changes = list(argv[0])
         else:
             self.smolt_changes = argv
+
+    def exploitation(self,list):
+        self.rates.append(list)
+
+    def policy(self,year,list):
+        if len(self.policies) <= year:
+            self.policies + ([] * ((year + 1) - len(self.policies)))
+        self.policies[year].append(list)
 
     def build(self):
         self.sim.stocks.append(self)
