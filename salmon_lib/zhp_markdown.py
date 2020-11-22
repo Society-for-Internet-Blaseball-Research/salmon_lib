@@ -42,10 +42,10 @@ class PageRenderer(BaseRenderer):
         raise NotImplementedError
 
     def render_auto_link(self, token):
-        raise NotImplementedError
+        raise self.render_inner_line(token)
 
     def render_escape_sequence(self, token):
-        raise NotImplementedError
+        raise self.render_inner_line(token)
 
     def render_list_item(self, token):
         raise NotImplementedError
@@ -58,7 +58,10 @@ class PageRenderer(BaseRenderer):
 
     # block tokens: return a list of Lines
     def render_block_code(self, token):
-        raise NotImplementedError
+        lines = []
+        for i in token.children[0].content.split('\n'):
+            lines.append(Line(text=i.encode('utf8'), styles=[Style(start=0, end=len(i), type=Style.STYLE_CODEBLOCK)]))
+        return lines
 
     def render_heading(self, token):
         lines = self.render_inner(token)
@@ -70,12 +73,6 @@ class PageRenderer(BaseRenderer):
 
     def render_quote(self, token):
         raise NotImplementedError
-
-    def render_block_code(self, token):
-        lines = []
-        for i in token.children[0].content.split('\n'):
-            lines.append(Line(text=i.encode('utf8'), styles=[Style(start=0, end=len(i), type=Style.STYLE_CODEBLOCK)]))
-        return lines
 
     def render_thematic_break(self, token):
         return [Line.make_hrule()]
