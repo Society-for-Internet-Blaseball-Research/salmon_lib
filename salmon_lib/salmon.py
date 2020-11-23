@@ -777,31 +777,3 @@ class StockBuilder:
         self.sim.stocks.append(self)
         self.index = len(sim.stocks) - 1
         return self.sim.stocks[-1]
-
-
-stock_config = {
-    "name": "Salmon Institute T",
-    "abbreviation": "SIR",
-    "hatchery_n": "Where the Salmon Are",
-    "cohort_abundance": [0.1, 0.2, 0.3, 0.4],
-    "maturation_rate": [0.1, 0.2, 0.3, 0.4],
-    "adult_equivalent": [0.1, 0.2, 0.3, 0.4],
-    "maturation_by_year": [[(2, 3), (2, 3), (2, 3)] for x in range(0, 39)],
-    "ev_scalars": [1] * 39,
-    "log_p": ["Log", "Normal", "Indep", "-0.6343", "1.0916", "911"],
-    "hatchery_flag": True,
-    "msy_esc": 7400,
-    "msh_flag": True,
-    "idl": 1.0,
-    "param": 1.4,
-    "age_factor": 2.0,
-}
-
-fishery_config = {
-    "name": "Python T",
-    "proportions": [0.1, 0.2, 0.3, 0.4],
-    "ocean_net": False,
-    "exploitations": [("SIR", [4, 3, 2, 1])],
-    "policy": [0.8] * 39,
-    "terminal": True,
-}
