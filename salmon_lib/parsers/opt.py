@@ -118,7 +118,7 @@ def write_config(data, file):
 {data['output']['exploitation']} ,     TOTAL EXPLOITATION RATE STATISTICS (0=No;1=Total Mortality Method;2=Cohort Method)
 {num_y(data['output']['mortalities'])} ,     TOTAL MORTALITIES BY STOCK & FISHERY  (1=YES)
 {num_y(data['output']['incidental_mortality'])} ,     INCIDENTAL MORTALITY STATISTICS (1=YES)
-{data['output']['abundance']['number']} ,  ABUNDANCE INDICES (# fisheries;followed by fishery #'s)"""[
+{data['output']['abundance']['number']} ,  ABUNDANCE INDICES (# fisheries;followed by fishery #'s)\n"""[
             1:
         ]
     )
@@ -139,7 +139,7 @@ def write_config(data, file):
 {data['report']['harvest_rate']} ,     HARVEST RATE (N=No; CO=Cohort Method; TM=Total Mortality Method)
 {num_y(data['report']['compare_base_year'])} ,     COMPARE STATISTICS TO BASE YEAR (1=YES)
 {lower_y(data['report']['document_model'])} ,     DOCUMENT MODEL SETUP (Y/N)
-{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT\n"""
+{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT\n"""[1:]
     )
 
     if data["report"]["stocks_enhancement"] > 0:

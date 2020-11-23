@@ -377,8 +377,6 @@ def should_display():
 
 # Begin methods which either print valid map.dat syntax,
 # or plot data onto a matplotlib graph.
-
-
 def render_path(pathtype, xy_coord_list):
     if should_display():
         xs, ys = zip(*xy_coord_list)
@@ -459,7 +457,6 @@ def latlonstr(num):
     num *= 60
     seconds = round(num)
     return "%02d %02d %02d" % (degrees, minutes, seconds)
-
 
 if __name__ == "__main__":
     with importlib.resources.open_text(
