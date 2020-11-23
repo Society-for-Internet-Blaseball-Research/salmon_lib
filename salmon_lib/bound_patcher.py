@@ -40,7 +40,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print(args)
 
     lat = args.lat
     lon = args.lon
