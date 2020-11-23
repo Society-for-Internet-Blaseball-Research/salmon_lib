@@ -4,6 +4,7 @@ import os
 import tempfile
 import subprocess
 import shutil
+
 """
 ## .bse:
 - Name
@@ -186,42 +187,44 @@ N	      ,  in-river management
     }
 """
 
-def with_default(main,higher,func):
-        if isinstance(main, list):  #main is a list of tuples
-            default = None
-            done = []
-            for rate in main:
-                stock = rate[0]
+
+def with_default(main, higher, func):
+    if isinstance(main, list):  # main is a list of tuples
+        default = None
+        done = []
+        for rate in main:
+            stock = rate[0]
             #    print('stock'+str(stock))
-                if stock == "default":
-                    default = rate[1]
-                else:
-                    done.append(stock)
-                    func(stock,rate[1])
+            if stock == "default":
+                default = rate[1]
+            else:
+                done.append(stock)
+                func(stock, rate[1])
 
-            for stock in higher:
-                if stock.abbreviation in done:
-                    pass
-                else:
-                    func(stock.abbreviation,default)
+        for stock in higher:
+            if stock.abbreviation in done:
+                pass
+            else:
+                func(stock.abbreviation, default)
 
-        elif isinstance(main, dict): # main is a dictionary
-            default = main.get("default")
-            done = []
-            for stock, rate in main.items():
-                if stock == "default":
-                    pass
-                else:
-                    done.append(stock)
-                    func(stock,rate)
-            for stock in higher:
-                if stock.abbreviation in done:
-                    pass
-                else:
-                    func(stock.abbreviation,default)
-        else:
-            for stock in higher: # main is a single value
-                func(stock.abbreviation,main)
+    elif isinstance(main, dict):  # main is a dictionary
+        default = main.get("default")
+        done = []
+        for stock, rate in main.items():
+            if stock == "default":
+                pass
+            else:
+                done.append(stock)
+                func(stock, rate)
+        for stock in higher:
+            if stock.abbreviation in done:
+                pass
+            else:
+                func(stock.abbreviation, default)
+    else:
+        for stock in higher:  # main is a single value
+            func(stock.abbreviation, main)
+
 
 def builder(func):
     def wrapper(self, *args, **kwargs):
@@ -229,6 +232,7 @@ def builder(func):
         return self
 
     return wrapper
+
 
 """
 maximum_ocean_age
@@ -239,25 +243,34 @@ start_year -> sim start year
 model_year -> model start year
 end_year -> end year
 """
+
+
 class Sim:
-    def __init__(self,config=None):
+    def __init__(self, config=None):
         if config:
             self.__dict__ = config
         self.stocks = []
         self.fisheries = []
-        self.maximum_ocean_age = self.__dict__.get('maximum_ocean_age',5)
-        self.mature_age = self.__dict__.get('mature_age',4)
-        self.natural_mortality = self.__dict__.get('natural_mortality',[0.5,0.4,0.3,0.2,0.1])
-        self.incidental_mortality = self.__dict__.get('incidental_mortality',[0.3,0.9,0.3])
-        self.model_year = self.__dict__.get('model_year',1979)
-        self.start_year = self.__dict__.get('start_year',1995)
-        self.end_year = self.__dict__.get('end_year',2017)
+        self.maximum_ocean_age = self.__dict__.get("maximum_ocean_age", 5)
+        self.mature_age = self.__dict__.get("mature_age", 4)
+        self.natural_mortality = self.__dict__.get(
+            "natural_mortality", [0.5, 0.4, 0.3, 0.2, 0.1]
+        )
+        self.incidental_mortality = self.__dict__.get(
+            "incidental_mortality", [0.3, 0.9, 0.3]
+        )
+        self.model_year = self.__dict__.get("model_year", 1979)
+        self.start_year = self.__dict__.get("start_year", 1995)
+        self.end_year = self.__dict__.get("end_year", 2017)
         # TODO: make this configurable via builder functions
 
     def build_fp(self):
-        array = [[[[] for i in range(len(self.fisheries))] for j in range(len(self.stocks))] for k in range(len(self.stocks[0].policies))] # allocate array as long as the first stock's amount of defined years
-        for i,stock in enumerate(self.stocks):
-            for j,year in enumerate(stock.policies):
+        array = [
+            [[[] for i in range(len(self.fisheries))] for j in range(len(self.stocks))]
+            for k in range(len(self.stocks[0].policies))
+        ]  # allocate array as long as the first stock's amount of defined years
+        for i, stock in enumerate(self.stocks):
+            for j, year in enumerate(stock.policies):
                 array[j][i] = year
         return array
 
@@ -267,179 +280,172 @@ class Sim:
         for stock in self.stocks:
             abbreviations.append(stock.abbreviation)
             stocks[stock.abbreviation] = {
-                'cohort_abundance': stock.cohort_abundance,
-                'maturation_rates': stock.maturation_rate,
-                'adult_equivalent': stock.adult_equivalent,
-                'fishery_exploitation': stock.rates
+                "cohort_abundance": stock.cohort_abundance,
+                "maturation_rates": stock.maturation_rate,
+                "adult_equivalent": stock.adult_equivalent,
+                "fishery_exploitation": stock.rates,
             }
-        return (abbreviations,stocks)
+        return (abbreviations, stocks)
 
-#    bse = {
-#        'number_of_stocks': int(lines[0]),
-#        'maximum_ocean_age': int(lines[1]),
-#        'number_of_fisheries': int(lines[2]),
-#        'initial_year': int(lines[3]), # hardcoded at 1979, apparently?
-#        'net_catche_maturity_age': int(lines[4]), # at line 5,
+    #    bse = {
+    #        'number_of_stocks': int(lines[0]),
+    #        'maximum_ocean_age': int(lines[1]),
+    #        'number_of_fisheries': int(lines[2]),
+    #        'initial_year': int(lines[3]), # hardcoded at 1979, apparently?
+    #        'net_catche_maturity_age': int(lines[4]), # at line 5,
     def build_bse(self):
         bse = {
-            'number_of_stocks': len(self.stocks),
-            'number_of_fisheries': len(self.fisheries),
-            'maximum_ocean_age': self.maximum_ocean_age,
-            'initial_year': 1979,
-            'net_catch_maturity_age': self.mature_age,
-            'natural_mortality_by_age': self.natural_mortality,
-            'incidental_mortality': self.incidental_mortality,
-            'ocean_net_fisheries': [],
-            'terminal_fisheries': [],
-            'fisheries': [],
-            'stocks': []
+            "number_of_stocks": len(self.stocks),
+            "number_of_fisheries": len(self.fisheries),
+            "maximum_ocean_age": self.maximum_ocean_age,
+            "initial_year": 1979,
+            "net_catch_maturity_age": self.mature_age,
+            "natural_mortality_by_age": self.natural_mortality,
+            "incidental_mortality": self.incidental_mortality,
+            "ocean_net_fisheries": [],
+            "terminal_fisheries": [],
+            "fisheries": [],
+            "stocks": [],
         }
 
         for fishery in self.fisheries:
-            bse['fisheries'].append({'name':fishery.name,'proportions_non_vulnerable':fishery.proportions}) # proportions non vulnerable: ages 2,3,4,5
-            bse['ocean_net_fisheries'].append(fishery.ocean_net)
+            bse["fisheries"].append(
+                {
+                    "name": fishery.name,
+                    "proportions_non_vulnerable": fishery.proportions,
+                }
+            )  # proportions non vulnerable: ages 2,3,4,5
+            bse["ocean_net_fisheries"].append(fishery.ocean_net)
 
         for stock in self.stocks:
-            bse['terminal_fisheries'].append(stock.terminals)
-            bse['stocks'].append({
-                'name': stock.name,
-                'id': stock.abbreviation,
-                'production_param': stock.param,
-                'msy_esc_estimate': stock.msy_esc,
-                'msh_esc_flag': stock.msh_flag,
-                'idl': stock.idl,
-                'age_conversion': stock.age_factor,
-                'hatchery_flag': stock.hatchery_flag
-            })
+            bse["terminal_fisheries"].append(stock.terminals)
+            bse["stocks"].append(
+                {
+                    "name": stock.name,
+                    "id": stock.abbreviation,
+                    "production_param": stock.param,
+                    "msy_esc_estimate": stock.msy_esc,
+                    "msh_esc_flag": stock.msh_flag,
+                    "idl": stock.idl,
+                    "age_conversion": stock.age_factor,
+                    "hatchery_flag": stock.hatchery_flag,
+                }
+            )
 
         return bse
 
     def build_ev(self):
         ev = {
-            'start_year': self.model_year,
-            'end_year': self.end_year,
-            'stocks': []
-    #            {
+            "start_year": self.model_year,
+            "end_year": self.end_year,
+            "stocks": []
+            #            {
             #        'log': ['Log', 'Normal', 'Indep', '-0.6343', '1.0916', '911'] # /shrug
-        #            'years': [3.30215,0.532,3.3252] # scalars for each year
-        #        },
-    #        ]
+            #            'years': [3.30215,0.532,3.3252] # scalars for each year
+            #        },
+            #        ]
         }
         for stock in self.stocks:
-            ev['stocks'].append({'log':stock.log_p,'years': stock.ev_scalars})
+            ev["stocks"].append({"log": stock.log_p, "years": stock.ev_scalars})
         return ev
 
     def build_msc(self):
         return {
-            'maturation_file': 'input/base.mat',
-            'stocks': [(stock.abbreviation,stock.hatchery_n) for stock in self.stocks if stock.hatchery_flag]
+            "maturation_file": "input/base.mat",
+            "stocks": [
+                (stock.abbreviation, stock.hatchery_n)
+                for stock in self.stocks
+                if stock.hatchery_flag
+            ],
         }
 
-# this is kind of hack
+    # this is kind of hack
     def build_mat(self):
         years = {}
         for stock in self.stocks:
             if stock.hatchery:
-                for i,year in enumerate(stock.maturation_by_year):
+                for i, year in enumerate(stock.maturation_by_year):
                     if not (1979 + i) in years:
-                        years[1979+i] = {}
-                    years[1979+i][stock.abbreviation] = {
+                        years[1979 + i] = {}
+                    years[1979 + i][stock.abbreviation] = {
                         2: year[0],
                         3: year[1],
-                        4: year[2]
+                        4: year[2],
                     }
 
         return years
 
-    def run(self,crisp_path):
+    def run(self, crisp_path):
         dir = tempfile.mkdtemp()
-        os.mkdir(os.path.join(dir,'input'))
+        os.mkdir(os.path.join(dir, "input"))
         print(dir)
         config = {
-            'model_start_year': self.model_year,
-            'sim_start_year': self.start_year,
-            'end_year': self.end_year,
-            'calibration': False,
-            'use_9525_evs': 1,
-            'minimum_terminal_age': 3,
-            'additional_slcm': False,
-            'in_river': False,
-            'input': {
-                'base': 'input/base.bse',
-                'stock': 'input/base.stk',
-                'maturation': 'input/base.msc',
-                'ev': 'input/base.ev',
-                'idl': {
-                    'enable': False,
-                    'file': ''
-                },
-                'enh': '',
-                'cnr': {
-                    'number': 0,
-                    'file': ''
-                },
-                'pnv': {
-                    'changes': 0,
-                    'files': ['']
-                },
-                'fp': 'input/base.fp',
-                'cei': {
-                    'enable': False,
-                    'file': ''
-                },
-                'monte': {
-                    'enable': False,
-                    'file': ''
-                }
+            "model_start_year": self.model_year,
+            "sim_start_year": self.start_year,
+            "end_year": self.end_year,
+            "calibration": False,
+            "use_9525_evs": 1,
+            "minimum_terminal_age": 3,
+            "additional_slcm": False,
+            "in_river": False,
+            "input": {
+                "base": "input/base.bse",
+                "stock": "input/base.stk",
+                "maturation": "input/base.msc",
+                "ev": "input/base.ev",
+                "idl": {"enable": False, "file": ""},
+                "enh": "",
+                "cnr": {"number": 0, "file": ""},
+                "pnv": {"changes": 0, "files": [""]},
+                "fp": "input/base.fp",
+                "cei": {"enable": False, "file": ""},
+                "monte": {"enable": False, "file": ""},
             },
-            'output': {
-                'enable': True,
-                'prefix': 'salmon',
-                'catch': True,
-                'term_run': False,
-                'escapement': False,
-                'ocn': 0,
-                'exploitation': 0,
-                'mortalities': 0,
-                'incidental_mortality': False,
-                'abundance': {
-                    'number': 0,
-                    'fisheries': []
-                }
+            "output": {
+                "enable": True,
+                "prefix": "salmon",
+                "catch": True,
+                "term_run": False,
+                "escapement": False,
+                "ocn": 0,
+                "exploitation": 0,
+                "mortalities": 0,
+                "incidental_mortality": False,
+                "abundance": {"number": 0, "fisheries": []},
             },
-            'report': {
-                'header': 'header',
-                'stock_prop': False,
-                'rt':  False,
-                'catch':  False,
-                'stock_fishery':  0,
-                'shaker': False,
-                'terminal_catch':  False,
-                'escapement':  False,
-                'harvest_rate':  'N',
-                'compare_base_year':  False,
-                'document_model':  False,
-                'stocks_enhancement': 0,
-                'density_dependence': False
-            }
+            "report": {
+                "header": "header",
+                "stock_prop": False,
+                "rt": False,
+                "catch": False,
+                "stock_fishery": 0,
+                "shaker": False,
+                "terminal_catch": False,
+                "escapement": False,
+                "harvest_rate": "N",
+                "compare_base_year": False,
+                "document_model": False,
+                "stocks_enhancement": 0,
+                "density_dependence": False,
+            },
         }
-        with open(os.path.join(dir,'proto.OPT'),'w',newline='\r\n') as f:
-            write_config(config,f)
-        with open(os.path.join(dir,'input/base.fp'),'w',newline='\r\n') as f:
-            write_fp(self.build_fp(),f)
-        with open(os.path.join(dir,'input/base.stk'),'w',newline='\r\n') as f:
+        with open(os.path.join(dir, "proto.OPT"), "w", newline="\r\n") as f:
+            write_config(config, f)
+        with open(os.path.join(dir, "input/base.fp"), "w", newline="\r\n") as f:
+            write_fp(self.build_fp(), f)
+        with open(os.path.join(dir, "input/base.stk"), "w", newline="\r\n") as f:
             stk = self.build_stk()
-            write_stk(stk[0],stk[1],f)
-        with open(os.path.join(dir,'input/base.bse'),'w',newline='\r\n') as f:
-            write_bse(self.build_bse(),f)
-        with open(os.path.join(dir,'input/base.ev'),'w',newline='\r\n') as f:
-            write_evo(self.build_ev(),f)
-        with open(os.path.join(dir,'input/base.msc'),'w',newline='\r\n') as f:
-            write_msc(self.build_msc(),f)
-        with open(os.path.join(dir,'input/base.mat'),'w',newline='\r\n') as f:
-            write_mat(self.build_mat(),f)
+            write_stk(stk[0], stk[1], f)
+        with open(os.path.join(dir, "input/base.bse"), "w", newline="\r\n") as f:
+            write_bse(self.build_bse(), f)
+        with open(os.path.join(dir, "input/base.ev"), "w", newline="\r\n") as f:
+            write_evo(self.build_ev(), f)
+        with open(os.path.join(dir, "input/base.msc"), "w", newline="\r\n") as f:
+            write_msc(self.build_msc(), f)
+        with open(os.path.join(dir, "input/base.mat"), "w", newline="\r\n") as f:
+            write_mat(self.build_mat(), f)
 
-        res = subprocess.run(['wine',crisp_path],cwd=dir,capture_output=True)
+        res = subprocess.run(["wine", crisp_path], cwd=dir, capture_output=True)
         shutil.rmdir()
         return res
 
@@ -483,7 +489,7 @@ class FisheryBuilder:
         self.exploitations = exploitations
 
     @builder
-    def terminal(self,terminal):
+    def terminal(self, terminal):
         self.terminal = terminal
 
     """
@@ -513,9 +519,17 @@ class FisheryBuilder:
         return next(i for i, x in enumerate(self.sim.stocks) if x.abbreviation == stock)
 
     def build(self):
-        with_default(self.exploitations,self.sim.stocks,lambda x,y: self.sim.stocks[self.stock_index(x)].exploitation(y))
+        with_default(
+            self.exploitations,
+            self.sim.stocks,
+            lambda x, y: self.sim.stocks[self.stock_index(x)].exploitation(y),
+        )
 
-        with_default(self.terminal,self.sim.stocks,lambda x,y: self.sim.stocks[self.stock_index(x)].terminal(y))
+        with_default(
+            self.terminal,
+            self.sim.stocks,
+            lambda x, y: self.sim.stocks[self.stock_index(x)].terminal(y),
+        )
 
         for i, year in enumerate(self.policy):
             if isinstance(year, list):  # year is a list of tuples
@@ -523,7 +537,7 @@ class FisheryBuilder:
                 done = []
                 for rate in year:
                     stock = rate[0]
-                #    print('stock'+str(stock))
+                    #    print('stock'+str(stock))
                     if stock == "default":
                         default = rate[1]
                     else:
@@ -553,7 +567,9 @@ class FisheryBuilder:
                         stock.policy(i, default)
             elif isinstance(year, float):  # year is a single float
                 for stock in sim.stocks:
-                    self.sim.stocks[self.stock_index(stock.abbreviation)].policy(i,year)
+                    self.sim.stocks[self.stock_index(stock.abbreviation)].policy(
+                        i, year
+                    )
 
         self.sim.fisheries.append(self)
         return self.sim.fisheries[-1]
@@ -579,6 +595,8 @@ adult_equivalent(s)
 maturation_by_year
 max_proportion
 """
+
+
 class StockBuilder:
     def __init__(self, sim, config=None):
         # do something with config
@@ -594,7 +612,7 @@ class StockBuilder:
         self.name = name
 
     @builder
-    def hatchery_name(self,name):
+    def hatchery_name(self, name):
         self.hatchery_n = name
 
     @builder
@@ -674,6 +692,7 @@ class StockBuilder:
         ...
     ]
     """
+
     @builder
     def maturation_by_year(self, *argv):
         if isinstance(argv[0], list):
@@ -703,17 +722,18 @@ class StockBuilder:
     def exploitation(self, list):
         self.rates.append(list)
 
-    def terminal(self,flag):
+    def terminal(self, flag):
         self.terminals.append(flag)
 
     def policy(self, year, list):
         if len(self.policies) <= year:
-            self.policies += ([[]] * ((year + 1) - len(self.policies)))
-    #    print("l" + str(list))
-    #    print(self.policies)
+            self.policies += [[]] * ((year + 1) - len(self.policies))
+        #    print("l" + str(list))
+        #    print(self.policies)
         print(list)
         self.policies[year].append(list)
         print(self.policies)
+
     #    print('p' + str(self.policies))
 
     def build(self):
@@ -721,26 +741,27 @@ class StockBuilder:
         self.index = len(sim.stocks) - 1
         return self.sim.stocks[-1]
 
+
 sim = Sim()
 
 stock_config = {
-    'name': 'Salmon Institute T',
-    'abbreviation': 'SIR',
-    'hatchery_n': 'Where the Salmon Are',
-    'cohort_abundance': [0.1,0.2,0.3,0.4],
-    'maturation_rate': [0.1,0.2,0.3,0.4],
-    'adult_equivalent': [0.1,0.2,0.3,0.4],
-    'maturation_by_year': [[(2,3),(2,3),(2,3)] for x in range(0,39)],
-    'ev_scalars': [1] * 39,
-    'log_p': ['Log', 'Normal', 'Indep', '-0.6343', '1.0916', '911'],
-    'hatchery_flag': True,
-    'msy_esc': 7400,
-    'msh_flag': True,
-    'idl': 1.0,
-    'param': 1.4,
-    'age_factor': 2.0
+    "name": "Salmon Institute T",
+    "abbreviation": "SIR",
+    "hatchery_n": "Where the Salmon Are",
+    "cohort_abundance": [0.1, 0.2, 0.3, 0.4],
+    "maturation_rate": [0.1, 0.2, 0.3, 0.4],
+    "adult_equivalent": [0.1, 0.2, 0.3, 0.4],
+    "maturation_by_year": [[(2, 3), (2, 3), (2, 3)] for x in range(0, 39)],
+    "ev_scalars": [1] * 39,
+    "log_p": ["Log", "Normal", "Indep", "-0.6343", "1.0916", "911"],
+    "hatchery_flag": True,
+    "msy_esc": 7400,
+    "msh_flag": True,
+    "idl": 1.0,
+    "param": 1.4,
+    "age_factor": 2.0,
 }
 
-#stock = StockBuilder(sim,config=stock_config).build()
-#fishery = FisheryBuilder(sim).name("Python T").pnv(0.1,0.2,0.3,0.4).ocean(False).exploits([("SIR",[4,3,2,1])]).policy([0.8] * 39).terminal(True).build()
-#print(sim.run(''))
+# stock = StockBuilder(sim,config=stock_config).build()
+# fishery = FisheryBuilder(sim).name("Python T").pnv(0.1,0.2,0.3,0.4).ocean(False).exploits([("SIR",[4,3,2,1])]).policy([0.8] * 39).terminal(True).build()
+# print(sim.run(''))
