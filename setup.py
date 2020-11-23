@@ -9,7 +9,7 @@ setup(
     author_email="waylandalis@gmail.com",
     license="MIT",
     packages=["salmon_lib", "salmon_lib.parsers", "salmon_lib.resources"],
-    install_requires=["matplotlib==3.3.3"],
+    install_requires=["matplotlib==3.3.3", "mistletoe==0.7.2"],
     include_package_data=True,
     zip_safe=False,
 )
