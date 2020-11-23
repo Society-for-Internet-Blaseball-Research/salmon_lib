@@ -13,14 +13,16 @@ flatten = lambda t: [item for sublist in t for item in sublist]
 class PageRenderer(BaseRenderer):
     # span tokens: return a Line
     def render_raw_text(self, token):
-        text = token.content.encode('utf8')
+        text = token.content.encode("utf8")
         return Line(text=text)
 
     def render_style(self, token, type, extra_info=0):
         line = self.render_inner_line(token)
         start = 0
         end = len(line.text)
-        line.styles.append(Style(start=start, end=end, type=type, extra_info=extra_info))
+        line.styles.append(
+            Style(start=start, end=end, type=type, extra_info=extra_info)
+        )
         return line
 
     def render_strong(self, token):
@@ -59,14 +61,26 @@ class PageRenderer(BaseRenderer):
     # block tokens: return a list of Lines
     def render_block_code(self, token):
         lines = []
-        for i in token.children[0].content.split('\n'):
-            lines.append(Line(text=i.encode('utf8'), styles=[Style(start=0, end=len(i), type=Style.STYLE_CODEBLOCK)]))
+        for i in token.children[0].content.split("\n"):
+            lines.append(
+                Line(
+                    text=i.encode("utf8"),
+                    styles=[Style(start=0, end=len(i), type=Style.STYLE_CODEBLOCK)],
+                )
+            )
         return lines
 
     def render_heading(self, token):
         lines = self.render_inner(token)
-        type = [Style.STYLE_H1, Style.STYLE_H2, Style.STYLE_H3, Style.STYLE_H4, Style.STYLE_H5, Style.STYLE_H6]
-        type = type[token.level-1]
+        type = [
+            Style.STYLE_H1,
+            Style.STYLE_H2,
+            Style.STYLE_H3,
+            Style.STYLE_H4,
+            Style.STYLE_H5,
+            Style.STYLE_H6,
+        ]
+        type = type[token.level - 1]
         for i in lines:
             i.styles.append(Style(start=0, end=len(i.text), type=type))
         return lines
@@ -90,7 +104,7 @@ class PageRenderer(BaseRenderer):
         if line == []:
             return Line()
         else:
-            return reduce(lambda x,y: x+y, line)
+            return reduce(lambda x, y: x + y, line)
 
     def render_inner_line(self, token):
         return self.reduce_line([self.render(i) for i in token.children])
@@ -101,7 +115,7 @@ class PageRenderer(BaseRenderer):
         for child in token.children:
             if child.__class__.__name__ == "LineBreak":
                 if child.soft:
-                    line.append(RawText(' '))
+                    line.append(RawText(" "))
                 else:
                     lines.append(line)
                     line = []
@@ -119,18 +133,30 @@ class PageRenderer(BaseRenderer):
     def compile(self, markdown, zhp):
         lines = self.render(Document(markdown))
         print(lines)
-        page = Page(title=b'title', title_id=1337, page_name=b'page_name', page_id=1337, lines=lines)
+        page = Page(
+            title=b"title",
+            title_id=1337,
+            page_name=b"page_name",
+            page_id=1337,
+            lines=lines,
+        )
         zhp.pages[1337] = page
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Compile and add markdown pages to a .zhp file.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-i", default="crisp2.zhp",
-                        metavar='INFILE', help="input zhp filename")
-    parser.add_argument("-o", default="crisp2_new.zhp",
-                        metavar='OUTFILE', help="output zhp filename")
-    parser.add_argument("markdown", default=argparse.SUPPRESS, help="Markdown file to add to zhp")
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "-i", default="crisp2.zhp", metavar="INFILE", help="input zhp filename"
+    )
+    parser.add_argument(
+        "-o", default="crisp2_new.zhp", metavar="OUTFILE", help="output zhp filename"
+    )
+    parser.add_argument(
+        "markdown", default=argparse.SUPPRESS, help="Markdown file to add to zhp"
+    )
 
     args = parser.parse_args()
     print(args)

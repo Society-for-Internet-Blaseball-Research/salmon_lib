@@ -63,11 +63,11 @@ class Style(Serializable):
     STYLE_MONO = 0x06
     STYLE_H1 = 0x08
     STYLE_H2 = 0x09
-    STYLE_H3 = 0x0a
-    STYLE_H4 = 0x0b
-    STYLE_H5 = 0x0c
-    STYLE_H6 = 0x0d
-    STYLE_IMAGE = 0x0f
+    STYLE_H3 = 0x0A
+    STYLE_H4 = 0x0B
+    STYLE_H5 = 0x0C
+    STYLE_H6 = 0x0D
+    STYLE_IMAGE = 0x0F
     STYLE_OL = 0x11
     STYLE_UL = 0x15
     STYLE_CODEBLOCK = 0x20
@@ -86,13 +86,13 @@ class Style(Serializable):
 
 @dataclass
 class Line(Serializable):
-    text: bytes = b''
-    unknown_fields: List[int] = field(default_factory=lambda: [0,0,0,0,0,0,0,0])
+    text: bytes = b""
+    unknown_fields: List[int] = field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0])
     styles: List[Style] = field(default_factory=list)
 
     @classmethod
     def make_hrule(cls):
-        return cls(unknown_fields=[1,0,0,0,0,1,0,0])
+        return cls(unknown_fields=[1, 0, 0, 0, 0, 1, 0, 0])
 
     @classmethod
     def parse(cls, b):
@@ -134,6 +134,7 @@ class Line(Serializable):
             styles.append(replace(i, start=start, end=end))
         return Line(text=text, unknown_fields=unknown_fields, styles=styles)
 
+
 @dataclass
 class Page(Serializable):
     title: bytes
@@ -141,7 +142,7 @@ class Page(Serializable):
     page_name: bytes
     page_id: int  # ???
     lines: List[Line]
-    
+
     @classmethod
     def parse(cls, b):
         b.read(4)  # length (ignored)
