@@ -4,25 +4,29 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import struct
 
+
 def u32(b):
-    return struct.unpack('<I', b)[0]
+    return struct.unpack("<I", b)[0]
+
 
 def p32(x):
-    return struct.pack('<I', x)
+    return struct.pack("<I", x)
+
 
 def prefix_length(b):
     return p32(len(b)) + b
+
 
 class Buffer:
     def __init__(self, b):
         self.raw = b
         self.fp = 0
-    
+
     def seek(self, n):
         self.fp = n
 
     def read(self, n):
-        ret = self.raw[self.fp:self.fp+n]
+        ret = self.raw[self.fp : self.fp + n]
         self.fp += n
         return ret
 
@@ -33,15 +37,17 @@ class Buffer:
         length = self.read_int()
         return self.read(length)
 
+
 class Serializable(ABC):
     @classmethod
     @abstractmethod
-    def parse(cls, b: Buffer): # parse from the current b.fp and advance b.fp
+    def parse(cls, b: Buffer):  # parse from the current b.fp and advance b.fp
         pass
 
     @abstractmethod
     def serialize(self):
         pass
+
 
 @dataclass
 class Style(Serializable):
@@ -61,6 +67,7 @@ class Style(Serializable):
     def serialize(self):
         return p32(self.start) + p32(self.end) + p32(self.type) + p32(self.extra_info)
 
+
 @dataclass
 class Line(Serializable):
     text: bytes
@@ -77,33 +84,34 @@ class Line(Serializable):
         styles = []
         while True:
             style = Style.parse(b)
-            if style.start == 0xffff:
+            if style.start == 0xFFFF:
                 break
             styles.append(style)
         return cls(text=text, unknown_fields=unknown_fields, styles=styles)
 
     def serialize(self):
-        b = b''
+        b = b""
         b += p32(len(self.text))
         for i in self.unknown_fields:
             b += p32(i)
         b += self.text
         for i in self.styles:
             b += i.serialize()
-        b += b'\xff\xff\x00\x00'*4
+        b += b"\xff\xff\x00\x00" * 4
         return b
+
 
 @dataclass
 class Page(Serializable):
     title: bytes
-    title_id: int # ???
+    title_id: int  # ???
     page_name: bytes
-    page_id: int # ???
+    page_id: int  # ???
     lines: list
-    
+
     @classmethod
     def parse(cls, b):
-        b.read(4) # length (ignored)
+        b.read(4)  # length (ignored)
         num_lines = b.read_int()
         title = b.read_str()
         title_id = b.read_int()
@@ -112,10 +120,16 @@ class Page(Serializable):
         lines = []
         for i in range(num_lines):
             lines.append(Line.parse(b))
-        return cls(title=title, title_id=title_id, page_name=page_name, page_id=page_id, lines=lines)
+        return cls(
+            title=title,
+            title_id=title_id,
+            page_name=page_name,
+            page_id=page_id,
+            lines=lines,
+        )
 
     def serialize(self):
-        b = b''
+        b = b""
         b += p32(len(self.lines))
         b += prefix_length(self.title)
         b += p32(self.title_id)
@@ -125,6 +139,7 @@ class Page(Serializable):
             b += i.serialize()
         return prefix_length(b)
 
+
 @dataclass
 class Image(Serializable):
     data: bytes
@@ -132,12 +147,13 @@ class Image(Serializable):
     @classmethod
     def parse(cls, b):
         l = b.read_int()
-        assert b.read_int() == 0 # ???
-        data = b.read(l-4)
+        assert b.read_int() == 0  # ???
+        data = b.read(l - 4)
         return cls(data=data)
 
     def serialize(self):
         return prefix_length(p32(0) + self.data)
+
 
 @dataclass
 class TOCEntry(Serializable):
@@ -153,6 +169,7 @@ class TOCEntry(Serializable):
     def serialize(self):
         return prefix_length(self.title) + p32(self.id)
 
+
 @dataclass
 class TOC(Serializable):
     toc: list
@@ -160,18 +177,19 @@ class TOC(Serializable):
     @classmethod
     def parse(cls, b):
         toc = []
-        b.read(4) # length (ignored)
+        b.read(4)  # length (ignored)
         num_toc = b.read_int()
         for i in range(num_toc):
             toc.append(TOCEntry.parse(b))
         return cls(toc=toc)
 
     def serialize(self):
-        b = b''
+        b = b""
         for i in self.toc:
             b += i.serialize()
         b = p32(len(self.toc)) + b
         return prefix_length(b)
+
 
 @dataclass
 class Link(Serializable):
@@ -187,6 +205,7 @@ class Link(Serializable):
     def serialize(self):
         return prefix_length(self.link) + p32(self.id)
 
+
 @dataclass
 class Links(Serializable):
     links: list
@@ -194,18 +213,19 @@ class Links(Serializable):
     @classmethod
     def parse(cls, b):
         links = []
-        b.read(4) # length (ignored)
+        b.read(4)  # length (ignored)
         num_links = b.read_int()
         for i in range(num_links):
             links.append(Link.parse(b))
         return cls(links=links)
 
     def serialize(self):
-        b = b''
+        b = b""
         for i in self.links:
             b += i.serialize()
         b = p32(len(self.links)) + b
         return prefix_length(b)
+
 
 @dataclass
 class DirectoryEntry(Serializable):
@@ -223,6 +243,7 @@ class DirectoryEntry(Serializable):
     def serialize(self):
         return p32(self.id) + p32(self.offset) + p32(self.type)
 
+
 @dataclass
 class Directory(Serializable):
     directory: list
@@ -236,11 +257,12 @@ class Directory(Serializable):
         return cls(directory=directory)
 
     def serialize(self):
-        b = b''
+        b = b""
         for i in self.directory:
             b += i.serialize()
-        b += b'\xff\xff\x00\x00'*4
+        b += b"\xff\xff\x00\x00" * 4
         return p32(len(self.directory)) + b
+
 
 @dataclass
 class ZHP(Serializable):
@@ -253,7 +275,7 @@ class ZHP(Serializable):
     def parse(cls, b):
         if type(b) == bytes:
             b = Buffer(b)
-        assert b.read(12) == b'ZHELP10000\x01\x00'
+        assert b.read(12) == b"ZHELP10000\x01\x00"
         l = b.read_int()
         b.seek(l)
 
@@ -277,30 +299,30 @@ class ZHP(Serializable):
         return cls(pages=pages, images=images, toc=toc, links=links)
 
     def serialize(self):
-        header = b'ZHELP10000\x01\x00'
-        entries = b''
+        header = b"ZHELP10000\x01\x00"
+        entries = b""
         directory = []
-        header_offset = len(header)+4
+        header_offset = len(header) + 4
         # pages
         for d_id, page in self.pages.items():
-            d_offset = header_offset+len(entries)
+            d_offset = header_offset + len(entries)
             entries += page.serialize()
             directory.append(DirectoryEntry(id=d_id, offset=d_offset, type=1))
         # images
         for d_id, image in self.images.items():
-            d_offset = header_offset+len(entries)
+            d_offset = header_offset + len(entries)
             entries += image.serialize()
             directory.append(DirectoryEntry(id=d_id, offset=d_offset, type=2))
         # toc
-        d_offset = header_offset+len(entries)
+        d_offset = header_offset + len(entries)
         entries += self.toc.serialize()
         directory.append(DirectoryEntry(id=0, offset=d_offset, type=3))
         # links
-        d_offset = header_offset+len(entries)
+        d_offset = header_offset + len(entries)
         entries += self.links.serialize()
         directory.append(DirectoryEntry(id=0, offset=d_offset, type=4))
 
         directory = Directory(directory=directory).serialize()
 
-        header += p32(len(header) + 4 + len(entries)) # directory offset
+        header += p32(len(header) + 4 + len(entries))  # directory offset
         return header + entries + directory

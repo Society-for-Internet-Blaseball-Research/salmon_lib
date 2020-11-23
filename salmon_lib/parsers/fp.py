@@ -17,9 +17,11 @@ def parse_fp(file):
     """parse .fp files. returns a 3D array (nested lists):
     year x stock x fishery.
     The original base.fp file, for instance, returns a 39x30x25 array."""
-    slices = file.read().strip().replace('\r', '').split('\n\n')
-    return [[[float(s) for s in line.split()] for line in slice.splitlines()]
-            for slice in slices]
+    slices = file.read().strip().replace("\r", "").split("\n\n")
+    return [
+        [[float(s) for s in line.split()] for line in slice.splitlines()]
+        for slice in slices
+    ]
 
 
 def write_fp(data, f):

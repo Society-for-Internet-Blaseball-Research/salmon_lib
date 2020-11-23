@@ -7,6 +7,8 @@
     ...
 }
 """
+
+
 def parse_stock_file(file):
     cols = []
     years = {}
@@ -18,9 +20,10 @@ def parse_stock_file(file):
         else:
             year = int(row[0])
             years[year] = []
-            for i,rate in enumerate(row[1:]):
-                years[year].append((cols[i],int(rate)))
+            for i, rate in enumerate(row[1:]):
+                years[year].append((cols[i], int(rate)))
     return years
+
 
 def parse_prn(file):
     years = {}
@@ -28,6 +31,6 @@ def parse_prn(file):
         row = line.split()
         year = int(row[0])
         years[year] = []
-        for i,stlat in enumerate(row[1:]):
-            years[year].append((i,int(stlat)))
+        for i, stlat in enumerate(row[1:]):
+            years[year].append((i, int(stlat)))
     return years
