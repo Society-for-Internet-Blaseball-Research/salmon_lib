@@ -42,7 +42,7 @@ def parse_cei(file):
         "num_ceil_fisheries": int(lines[4].split(",")[0].strip()),
         "num_ceil_changes": int(lines[5].split(",")[0].strip()),
         "ceil_change_years": [int(year) for year in lines[6].split(",")[0].split()],
-        "fishery": []
+        "fishery": [],
     }
 
     # now for the fun stuff. From some file-surgery testing, I believe that
