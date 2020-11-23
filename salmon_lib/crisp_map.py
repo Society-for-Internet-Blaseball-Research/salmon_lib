@@ -458,6 +458,7 @@ def latlonstr(num):
     seconds = round(num)
     return "%02d %02d %02d" % (degrees, minutes, seconds)
 
+
 if __name__ == "__main__":
     with importlib.resources.open_text(
         salmon_lib.resources, "crisp_map_data.json"

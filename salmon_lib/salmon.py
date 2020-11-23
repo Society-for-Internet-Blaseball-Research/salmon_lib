@@ -324,35 +324,35 @@ class Sim:
 
         return years
 
-    def load_prn(self,file):
+    def load_prn(self, file):
         if os.path.isfile(file):
             with open(file) as f:
                 return parse_prn(f)
         else:
             return None
 
-    def load_rt(self,file):
+    def load_rt(self, file):
         if os.path.isfile(file):
             with open(file) as f:
                 return parse_rt(f)
         else:
             return None
 
-    def load_abd(self,file):
+    def load_abd(self, file):
         if os.path.isfile(file):
             with open(file) as f:
                 return parse_abd(f)
         else:
             return None
 
-    def load_stock(self,file):
+    def load_stock(self, file):
         if os.path.isfile(file):
             with open(file) as f:
                 return parse_stock_file(f)
         else:
             return None
 
-    def run(self, crisp_path,wine_path='wine'):
+    def run(self, crisp_path, wine_path="wine"):
         dir = tempfile.mkdtemp()
         os.mkdir(os.path.join(dir, "input"))
         print(dir)
@@ -388,7 +388,10 @@ class Sim:
                 "exploitation": 1,
                 "mortalities": 1,
                 "incidental_mortality": True,
-                "abundance": {"number": len(self.fisheries), "fisheries": [x for x in range(1,len(self.fisheries)+1)]},
+                "abundance": {
+                    "number": len(self.fisheries),
+                    "fisheries": [x for x in range(1, len(self.fisheries) + 1)],
+                },
             },
             "report": {
                 "header": "header",
@@ -402,7 +405,7 @@ class Sim:
                 "harvest_rate": "N",
                 "compare_base_year": False,
                 "document_model": False,
-                "stocks_enhancement": 0, # reminder for alis, from alis: this move this to main category dumbass
+                "stocks_enhancement": 0,  # reminder for alis, from alis: this move this to main category dumbass
                 "density_dependence": False,
             },
         }
@@ -423,33 +426,47 @@ class Sim:
         with open(os.path.join(dir, "input/base.mat"), "w", newline="\r\n") as f:
             write_mat(self.build_mat(), f)
 
-        res = subprocess.run([wine_path, crisp_path,'-n'], cwd=dir, capture_output=True)
+        res = subprocess.run(
+            [wine_path, crisp_path, "-n"], cwd=dir, capture_output=True
+        )
 
         results = {
-            'catch': self.load_prn(os.path.join(dir,'salmoncat.prn')),
-            'abundances': self.load_abd(os.path.join(dir,'salmonabd.prn')),
-            'esc': self.load_prn(os.path.join(dir,'salmonesc.prn')),
-            'trm': self.load_prn(os.path.join(dir,'salmontrm.prn')),
-            'ohr': self.load_prn(os.path.join(dir,'salmonohr.prn')),
-            'lim': self.load_prn(os.path.join(dir,'salmonlim.prn')),
-            'sim': self.load_prn(os.path.join(dir,'salmonsim.prn')),
-            'tim': self.load_prn(os.path.join(dir,'salmontim.prn')),
-            'rt': self.load_rt(os.path.join(dir,'salmonrt.prn')),
-            'stocks': {}
+            "catch": self.load_prn(os.path.join(dir, "salmoncat.prn")),
+            "abundances": self.load_abd(os.path.join(dir, "salmonabd.prn")),
+            "esc": self.load_prn(os.path.join(dir, "salmonesc.prn")),
+            "trm": self.load_prn(os.path.join(dir, "salmontrm.prn")),
+            "ohr": self.load_prn(os.path.join(dir, "salmonohr.prn")),
+            "lim": self.load_prn(os.path.join(dir, "salmonlim.prn")),
+            "sim": self.load_prn(os.path.join(dir, "salmonsim.prn")),
+            "tim": self.load_prn(os.path.join(dir, "salmontim.prn")),
+            "rt": self.load_rt(os.path.join(dir, "salmonrt.prn")),
+            "stocks": {},
         }
 
-        known = ["salmoncat.prn","salmonabd.prn","salmonesc.prn","salmontrm.prn","salmonohr.prn","salmonlim.prn","salmonsim.prn","salmontim.prn","salmonrt.prn","salmoncoh.prn","salmonthr.prn"]
-        for prn in glob.glob(dir + '/*.prn', recursive=False):
+        known = [
+            "salmoncat.prn",
+            "salmonabd.prn",
+            "salmonesc.prn",
+            "salmontrm.prn",
+            "salmonohr.prn",
+            "salmonlim.prn",
+            "salmonsim.prn",
+            "salmontim.prn",
+            "salmonrt.prn",
+            "salmoncoh.prn",
+            "salmonthr.prn",
+        ]
+        for prn in glob.glob(dir + "/*.prn", recursive=False):
             if not os.path.basename(prn) in known:
                 id = os.path.basename(prn)[6:9]
                 stock = self.load_stock(prn)
-                for k,year in stock.items():
+                for k, year in stock.items():
                     for fishery in year:
                         fishery = list(fishery)
-                        fishery[0] = self.fisheries[fishery[0]-1].name
-                results['stocks'][id] = stock
+                        fishery[0] = self.fisheries[fishery[0] - 1].name
+                results["stocks"][id] = stock
         shutil.rmtree(dir)
-        return (res,results)
+        return (res, results)
 
 
 class FisheryBuilder:
@@ -585,6 +602,7 @@ class FisheryBuilder:
         self.sim.fisheries.append(self)
         return self.sim.fisheries[-1]
 
+
 class StockBuilder:
     def __init__(self, sim, config=None):
         """
@@ -693,7 +711,6 @@ class StockBuilder:
         else:
             self.log_p = list(argv)
 
-
     @builder
     def maturation_by_year(self, *argv):
         """
@@ -738,9 +755,9 @@ class StockBuilder:
             self.policies += [[]] * ((year + 1) - len(self.policies))
         #    print("l" + str(list))
         #    print(self.policies)
-        #print(list)
+        # print(list)
         self.policies[year].append(list)
-        #print(self.policies)
+        # print(self.policies)
 
     #    print('p' + str(self.policies))
 
@@ -748,6 +765,7 @@ class StockBuilder:
         self.sim.stocks.append(self)
         self.index = len(sim.stocks) - 1
         return self.sim.stocks[-1]
+
 
 stock_config = {
     "name": "Salmon Institute T",
@@ -768,15 +786,15 @@ stock_config = {
 }
 
 fishery_config = {
-    "name": 'Python T',
-    'proportions': [0.1,0.2,0.3,0.4],
-    'ocean_net': False,
-    'exploitations': [("SIR",[4,3,2,1])],
-    'policy': [0.8] * 39,
-    'terminal': True
+    "name": "Python T",
+    "proportions": [0.1, 0.2, 0.3, 0.4],
+    "ocean_net": False,
+    "exploitations": [("SIR", [4, 3, 2, 1])],
+    "policy": [0.8] * 39,
+    "terminal": True,
 }
 
-#sim = Sim()
-#stock = StockBuilder(sim,config=stock_config).build()
-#fishery = FisheryBuilder(sim,config=fishery_config).build()
-#pprint.pprint(sim.run("/home/alisw/Downloads/CRiSP Blaseball/crisphv3_blaseball.exe"))
+# sim = Sim()
+# stock = StockBuilder(sim,config=stock_config).build()
+# fishery = FisheryBuilder(sim,config=fishery_config).build()
+# pprint.pprint(sim.run("/home/alisw/Downloads/CRiSP Blaseball/crisphv3_blaseball.exe"))

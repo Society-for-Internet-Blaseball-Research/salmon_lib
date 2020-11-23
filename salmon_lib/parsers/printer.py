@@ -24,6 +24,7 @@ def parse_stock_file(file):
                 years[year].append((cols[i], int(rate)))
     return years
 
+
 """
 {
     'Fishery': [
@@ -31,6 +32,8 @@ def parse_stock_file(file):
     ]
 }
 """
+
+
 def parse_abd(file):
     fisheries = {}
     curr_fishery = ""
@@ -40,8 +43,9 @@ def parse_abd(file):
             fisheries[curr_fishery] = []
         else:
             row = line.split()
-            fisheries[curr_fishery] = (row[0],row[1])
+            fisheries[curr_fishery] = (row[0], row[1])
     return fisheries
+
 
 """
 (pre terminal rt,terminal rt)
@@ -51,6 +55,8 @@ pre terminal rt = [
 ]
 terminal is the same thing
 """
+
+
 def parse_rt(file):
     terminal = []
     pre_terminal = []
@@ -58,10 +64,11 @@ def parse_rt(file):
     for line in file:
         row = line.split()
         if not row[0].isdigit():
-            terminal = [(tline.split()[0],tline.split()[1:]) for tline in file]
+            terminal = [(tline.split()[0], tline.split()[1:]) for tline in file]
         else:
-            pre_terminal.append((row[0],row[1:]))
-    return (pre_terminal,terminal)
+            pre_terminal.append((row[0], row[1:]))
+    return (pre_terminal, terminal)
+
 
 def parse_prn(file):
     years = {}
@@ -77,7 +84,7 @@ def parse_prn(file):
                 try:
                     val = float(stlat)
                 except ValueError:
-                    val = stlat # wow this is cursed
+                    val = stlat  # wow this is cursed
 
             years[year].append((i, val))
     return years

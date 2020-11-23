@@ -139,7 +139,9 @@ def write_config(data, file):
 {data['report']['harvest_rate']} ,     HARVEST RATE (N=No; CO=Cohort Method; TM=Total Mortality Method)
 {num_y(data['report']['compare_base_year'])} ,     COMPARE STATISTICS TO BASE YEAR (1=YES)
 {lower_y(data['report']['document_model'])} ,     DOCUMENT MODEL SETUP (Y/N)
-{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT\n"""[1:]
+{data['report']['stocks_enhancement']} ,  NUMBER OF STOCKS WITH ENHANCEMENT\n"""[
+            1:
+        ]
     )
 
     if data["report"]["stocks_enhancement"] > 0:
