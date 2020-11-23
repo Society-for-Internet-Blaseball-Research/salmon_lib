@@ -6,6 +6,7 @@ import tempfile
 import subprocess
 import shutil
 import glob
+import json
 
 """
 ## .bse:
@@ -193,7 +194,6 @@ model_year -> model start year
 end_year -> end year
 """
 
-
 class Sim:
     def __init__(self, config=None):
         if config:
@@ -212,6 +212,15 @@ class Sim:
         self.start_year = self.__dict__.get("start_year", 1995)
         self.end_year = self.__dict__.get("end_year", 2017)
         # TODO: make this configurable via builder functions, i guess?
+
+    def from_sibr_conf(self,data):
+        self.__dict__ = data['sim']
+        self.stocks = []
+        self.fisheries = []
+        for stock in config['stocks']:
+            StockBuilder(sim,config=stock).build()
+        for fishery in config['fisheries']:
+            FisheryBuilder(sim,config=fishery).build()
 
     def build_fp(self):
         array = [
@@ -304,7 +313,7 @@ class Sim:
             "stocks": [
                 (stock.abbreviation, stock.hatchery_n)
                 for stock in self.stocks
-                if stock.hatchery_flag
+                if len(stock.hatchery_n) > 0
             ],
         }
 
@@ -431,16 +440,18 @@ class Sim:
         )
 
         results = {
-            "catch": self.load_prn(os.path.join(dir, "salmoncat.prn")),
-            "abundances": self.load_abd(os.path.join(dir, "salmonabd.prn")),
-            "esc": self.load_prn(os.path.join(dir, "salmonesc.prn")),
-            "trm": self.load_prn(os.path.join(dir, "salmontrm.prn")),
-            "ohr": self.load_prn(os.path.join(dir, "salmonohr.prn")),
-            "lim": self.load_prn(os.path.join(dir, "salmonlim.prn")),
-            "sim": self.load_prn(os.path.join(dir, "salmonsim.prn")),
-            "tim": self.load_prn(os.path.join(dir, "salmontim.prn")),
-            "rt": self.load_rt(os.path.join(dir, "salmonrt.prn")),
-            "stocks": {},
+            'catch': self.load_prn(os.path.join(dir,'salmoncat.prn')),
+            'abundances': self.load_abd(os.path.join(dir,'salmonabd.prn')),
+            'esc': self.load_prn(os.path.join(dir,'salmonesc.prn')),
+            'trm': self.load_prn(os.path.join(dir,'salmontrm.prn')),
+            'ohr': self.load_prn(os.path.join(dir,'salmonohr.prn')),
+            'lim': self.load_prn(os.path.join(dir,'salmonlim.prn')),
+            'sim': self.load_prn(os.path.join(dir,'salmonsim.prn')),
+            'tim': self.load_prn(os.path.join(dir,'salmontim.prn')),
+            'rt': self.load_rt(os.path.join(dir,'salmonrt.prn')),
+            'coh': self.load_abd(os.path.join(dir,'salmoncoh.prn')),
+            'thr': self.load_prn(os.path.join(dir,'salmonthr.prn')),
+            'stocks': {}
         }
 
         known = [
@@ -793,8 +804,3 @@ fishery_config = {
     "policy": [0.8] * 39,
     "terminal": True,
 }
-
-# sim = Sim()
-# stock = StockBuilder(sim,config=stock_config).build()
-# fishery = FisheryBuilder(sim,config=fishery_config).build()
-# pprint.pprint(sim.run("/home/alisw/Downloads/CRiSP Blaseball/crisphv3_blaseball.exe"))
