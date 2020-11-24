@@ -7,3 +7,4 @@ from .mat import *
 from .printer import *
 from .pnv import *
 from .idl import *
+from .cei import *

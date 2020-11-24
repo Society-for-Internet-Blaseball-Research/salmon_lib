@@ -52,7 +52,7 @@ def parse_cei(file):
     # I think. Or, uh...well, let's just say for now that it expects the end of
     # ceil_change_years to be the last year listed.
 
-    finalyear = ceil["ceil_change_years"][-1]
+    finalyear = cei["ceil_change_years"][-1]
     line_i = 7  # time to step through painfully and build each fishery dict
     for fish_i in range(cei["num_ceil_fisheries"]):
         # get the header (for completeness) and the fishery ID
@@ -102,6 +102,6 @@ def parse_cei(file):
         fishery["ceil_change_years"] = [int(year) for year in lines[line_i].split(",")[0].split()]
         line_i += 1
 
-        fisheries.append(fishery)
+        cei["fisheries"].append(fishery)
 
     return cei
