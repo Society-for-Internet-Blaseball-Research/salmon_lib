@@ -132,7 +132,6 @@ def builder(func):
     return wrapper
 
 
-
 class Sim:
     def __init__(self, config=None):
         """
@@ -176,17 +175,17 @@ class Sim:
 
     def to_sibr_conf(self):
         return {
-            'sim': {
-                'maximum_ocean_age': self.maximum_ocean_age,
-                'mature_age': self.mature_age,
-                'natural_mortality': self.natural_mortality,
-                'incidental_mortality': self.incidental_mortality,
-                'model_year': self.model_year,
-                'start_year': self.start_year,
-                'end_year': self.end_year
+            "sim": {
+                "maximum_ocean_age": self.maximum_ocean_age,
+                "mature_age": self.mature_age,
+                "natural_mortality": self.natural_mortality,
+                "incidental_mortality": self.incidental_mortality,
+                "model_year": self.model_year,
+                "start_year": self.start_year,
+                "end_year": self.end_year,
             },
-            'fisheries': self.fisheries,
-            'stocks': self.stocks
+            "fisheries": self.fisheries,
+            "stocks": self.stocks,
         }
 
     # runs a CRiSP simulation and fetch the results
@@ -263,19 +262,17 @@ class Sim:
         with open(os.path.join(dir, "input/base.mat"), "w", newline="\r\n") as f:
             write_mat(self.build_mat(), f)
 
-        res = subprocess.run(
-            [wine_path, crisp_path,'-n'], cwd=dir
-        )
+        res = subprocess.run([wine_path, crisp_path, "-n"], cwd=dir)
 
         results = {
-            "catch": self.load_prn(os.path.join(dir, "salmoncat.prn"),by_fishery=True),
+            "catch": self.load_prn(os.path.join(dir, "salmoncat.prn"), by_fishery=True),
             "abundances": self.load_abd(os.path.join(dir, "salmonabd.prn")),
             "esc": self.load_prn(os.path.join(dir, "salmonesc.prn")),
             "trm": self.load_prn(os.path.join(dir, "salmontrm.prn")),
             "ohr": self.load_prn(os.path.join(dir, "salmonohr.prn")),
-            "lim": self.load_prn(os.path.join(dir, "salmonlim.prn"),by_fishery=True),
-            "sim": self.load_prn(os.path.join(dir, "salmonsim.prn"),by_fishery=True),
-            "tim": self.load_prn(os.path.join(dir, "salmontim.prn"),by_fishery=True),
+            "lim": self.load_prn(os.path.join(dir, "salmonlim.prn"), by_fishery=True),
+            "sim": self.load_prn(os.path.join(dir, "salmonsim.prn"), by_fishery=True),
+            "tim": self.load_prn(os.path.join(dir, "salmontim.prn"), by_fishery=True),
             "rt": self.load_rt(os.path.join(dir, "salmonrt.prn")),
             "coh": self.load_abd(os.path.join(dir, "salmoncoh.prn")),
             "thr": self.load_prn(os.path.join(dir, "salmonthr.prn")),
@@ -308,7 +305,6 @@ class Sim:
         shutil.rmtree(dir)
         return (res, results)
 
-
     # utility methods
 
     def build_fp(self):
@@ -333,7 +329,6 @@ class Sim:
                 "fishery_exploitation": stock.rates,
             }
         return (abbreviations, stocks)
-
 
     def build_bse(self):
         bse = {
@@ -377,11 +372,7 @@ class Sim:
         return bse
 
     def build_ev(self):
-        ev = {
-            "start_year": self.model_year,
-            "end_year": self.end_year,
-            "stocks": []
-        }
+        ev = {"start_year": self.model_year, "end_year": self.end_year, "stocks": []}
 
         for stock in self.stocks:
             ev["stocks"].append({"log": stock.log_p, "years": stock.ev_scalars})
@@ -413,13 +404,17 @@ class Sim:
 
         return years
 
-    def load_prn(self, file,by_fishery=False):
+    def load_prn(self, file, by_fishery=False):
         if os.path.isfile(file):
             with open(file) as f:
                 parsed = parse_prn(f)
                 results = {}
-                for k,v in parsed.items():
-                    name = self.fisheries[k].name if by_fishery else self.stocks[k].abbreviation
+                for k, v in parsed.items():
+                    name = (
+                        self.fisheries[k].name
+                        if by_fishery
+                        else self.stocks[k].abbreviation
+                    )
                     results[name] = v
                 return results
 
@@ -446,6 +441,7 @@ class Sim:
                 return parse_stock_file(f)
         else:
             return None
+
 
 class Fishery:
     def __init__(self, sim, config=None):
@@ -771,4 +767,3 @@ class Stock:
 #     print(f"Fetch times: Avg {statistics.mean(fetch_times)}; Mean {statistics.median(sorted(fetch_times))}")
 #     print(f"Load times: Avg {statistics.mean(load_times)}; Mean {statistics.median(sorted(load_times))}")
 #     print(f"Build times: Avg {statistics.mean(build_times)}; Mean {statistics.median(sorted(build_times))}")
-   

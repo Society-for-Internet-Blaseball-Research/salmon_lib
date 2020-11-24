@@ -105,11 +105,7 @@ if __name__ == "__main__":
         "end_year": 2017,
     }
 
-    sibr = json.dumps({
-        'fisheries': fisheries,
-        'stocks': stocks,
-        'sim': sim
-    })
+    sibr = json.dumps({"fisheries": fisheries, "stocks": stocks, "sim": sim})
 
     with open("sibr.json", "w") as f:
         f.write(sibr)
