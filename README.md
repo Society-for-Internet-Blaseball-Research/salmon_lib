@@ -45,7 +45,6 @@ Usage:
 - `.prn` (read-only)
 
 **missing formats**
-- `.fp`
-- `.cei`
+- `.cei` (in progress)
 - `.config`
 - `.monte`

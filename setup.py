@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="salmon_lib",
-    version="0.2.5",
+    version="0.3.0",
     description="a library to read and write CRiSP harvest files",
     url="https://github.com/Society-for-Internet-Blaseball-Research/salmon_lib",
     author="alisww",
