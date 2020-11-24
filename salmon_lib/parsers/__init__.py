@@ -4,6 +4,6 @@ from .fp import *
 from .enh import *
 from .evo import *
 from .mat import *
-from .prn import *
+from .printer import *
 from .pnv import *
 from .idl import *

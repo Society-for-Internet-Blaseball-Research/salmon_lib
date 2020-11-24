@@ -1,9 +1,11 @@
 # This is all extremely WIP, and not in working state.
 from salmon_lib.parsers import *
 import os
+import os.path
 import tempfile
 import subprocess
 import shutil
+import glob
 
 """
 ## .bse:
@@ -117,74 +119,21 @@ Y	      ,  monte configuration information?
 N 	      ,  additional save stats for slcm?
 N	      ,  in-river management
 
-    config = {
-        'model_start_year': int(cfg_row(lines[1])),
-        'sim_start_year': int(cfg_row(lines[end+5])),
-        'end_year': int(cfg_row(lines[2])),
-        'calibration': y_or(lines[5]),
-        'use_9525_evs': int(cfg_row(lines[7])),
-        'minimum_terminal_age': int(cfg_row(lines[end+2])),
-        'additional_slcm': y_or(lines[end+8]),
-        'in_river': y_or(lines[end+9]),
-        'input': {
-            'base': cfg_row(lines[3]),
-            'stock': cfg_row(lines[4]),
-            'maturation': cfg_row(lines[6]),
-            'ev': cfg_row(lines[8]),
-            'idl': {
-                'enable': y_or(lines[9]),
-                'file': cfg_row(lines[10])
-            },
-            'enh': cfg_row(lines[abd+14]),
-            'cnr': {
-                'number': int(cfg_row(lines[abd+15])),
-                'file': cfg_row(lines[abd+16])
-            },
-            'pnv': {
-                'changes': int(cfg_row(lines[abd+17])),
-                'files': [cfg_row(l) for l in lines[abd+18:end+1]]
-            },
-            'fp': cfg_row(lines[end+1]),
-            'cei': {
-                'enable': y_or(lines[end+3]),
-                'file': cfg_row(lines[end+4])
-            },
-            'monte': {
-                'enable': y_or(lines[end+6]),
-                'file': cfg_row(lines[end+7])
-            }
-        },
-        'output': {
-            'enable': y_or(lines[11]),
-            'prefix': cfg_row(lines[12]),
-            'catch': y_or(lines[13]),
-            'term_run': y_or(lines[14]),
-            'escapement': y_or(lines[15]),
-            'ocn': int(cfg_row(lines[16])),
-            'exploitation': int(cfg_row(lines[17])),
-            'mortalities': int(cfg_row(lines[18])),
-            'incidental_mortality': y_or(lines[19]),
-            'abundance': {
-                'number': int(cfg_row(lines[20])),
-                'fisheries': [int(cfg_row(s)) for s in lines[20:abd]]
-            }
-        },
-        'report': {
-            'header': cfg_row(lines[abd+1]),
-            'stock_prop': y_or(lines[abd+2]),
-            'rt': y_or(lines[abd+3]),
-            'catch': y_or(lines[abd+4]),
-            'stock_fishery': int(cfg_row(lines[abd+5])),
-            'shaker': y_or(lines[abd+6]),
-            'terminal_catch': y_or(lines[abd+7]),
-            'escapement': y_or(lines[abd+8]),
-            'harvest_rate': cfg_row(lines[abd+9]),
-            'compare_base_year': y_or(lines[abd+10]),
-            'document_model': y_or(lines[abd+11]),
-            'stocks_enhancement': int(cfg_row(lines[abd+12])),
-            'density_dependence': y_or(lines[abd+13])
-        }
-    }
+
+Salmon Stlats / File
+catch -> ?cat.prn
+abundances indices -> ?abd.prn
+escapement -> ?esc.prn
+term run -> ?trm.prn
+ocn exploitation rate statistics -> ?ohr.prn
+total exploitation rates -> ?thr.prn
+incidental mortality rates -> ?lim.prn, ?sim.prn, ?tim.prn
+TOTAL MORTALITIES BY STOCK & FISHERY - > ?[stock abbreviation].prn
+stock prop -> none?
+rt -> ?rt.prn
+the rest of the report section is ???
+harvest rate -> possibly ?coh.prn and i just missed it. the code is better at generating configs than me, frankly
+something -> ?trn.prn
 """
 
 
@@ -262,7 +211,7 @@ class Sim:
         self.model_year = self.__dict__.get("model_year", 1979)
         self.start_year = self.__dict__.get("start_year", 1995)
         self.end_year = self.__dict__.get("end_year", 2017)
-        # TODO: make this configurable via builder functions
+        # TODO: make this configurable via builder functions, i guess?
 
     def build_fp(self):
         array = [
@@ -375,7 +324,35 @@ class Sim:
 
         return years
 
-    def run(self, crisp_path):
+    def load_prn(self, file):
+        if os.path.isfile(file):
+            with open(file) as f:
+                return parse_prn(f)
+        else:
+            return None
+
+    def load_rt(self, file):
+        if os.path.isfile(file):
+            with open(file) as f:
+                return parse_rt(f)
+        else:
+            return None
+
+    def load_abd(self, file):
+        if os.path.isfile(file):
+            with open(file) as f:
+                return parse_abd(f)
+        else:
+            return None
+
+    def load_stock(self, file):
+        if os.path.isfile(file):
+            with open(file) as f:
+                return parse_stock_file(f)
+        else:
+            return None
+
+    def run(self, crisp_path, wine_path="wine"):
         dir = tempfile.mkdtemp()
         os.mkdir(os.path.join(dir, "input"))
         print(dir)
@@ -405,18 +382,21 @@ class Sim:
                 "enable": True,
                 "prefix": "salmon",
                 "catch": True,
-                "term_run": False,
-                "escapement": False,
-                "ocn": 0,
-                "exploitation": 0,
-                "mortalities": 0,
-                "incidental_mortality": False,
-                "abundance": {"number": 0, "fisheries": []},
+                "term_run": True,
+                "escapement": True,
+                "ocn": 1,
+                "exploitation": 1,
+                "mortalities": 1,
+                "incidental_mortality": True,
+                "abundance": {
+                    "number": len(self.fisheries),
+                    "fisheries": [x for x in range(1, len(self.fisheries) + 1)],
+                },
             },
             "report": {
                 "header": "header",
                 "stock_prop": False,
-                "rt": False,
+                "rt": True,
                 "catch": False,
                 "stock_fishery": 0,
                 "shaker": False,
@@ -425,10 +405,11 @@ class Sim:
                 "harvest_rate": "N",
                 "compare_base_year": False,
                 "document_model": False,
-                "stocks_enhancement": 0,
+                "stocks_enhancement": 0,  # reminder for alis, from alis: this move this to main category dumbass
                 "density_dependence": False,
             },
         }
+
         with open(os.path.join(dir, "proto.OPT"), "w", newline="\r\n") as f:
             write_config(config, f)
         with open(os.path.join(dir, "input/base.fp"), "w", newline="\r\n") as f:
@@ -445,13 +426,60 @@ class Sim:
         with open(os.path.join(dir, "input/base.mat"), "w", newline="\r\n") as f:
             write_mat(self.build_mat(), f)
 
-        res = subprocess.run(["wine", crisp_path], cwd=dir, capture_output=True)
-        shutil.rmdir()
-        return res
+        res = subprocess.run(
+            [wine_path, crisp_path, "-n"], cwd=dir, capture_output=True
+        )
+
+        results = {
+            "catch": self.load_prn(os.path.join(dir, "salmoncat.prn")),
+            "abundances": self.load_abd(os.path.join(dir, "salmonabd.prn")),
+            "esc": self.load_prn(os.path.join(dir, "salmonesc.prn")),
+            "trm": self.load_prn(os.path.join(dir, "salmontrm.prn")),
+            "ohr": self.load_prn(os.path.join(dir, "salmonohr.prn")),
+            "lim": self.load_prn(os.path.join(dir, "salmonlim.prn")),
+            "sim": self.load_prn(os.path.join(dir, "salmonsim.prn")),
+            "tim": self.load_prn(os.path.join(dir, "salmontim.prn")),
+            "rt": self.load_rt(os.path.join(dir, "salmonrt.prn")),
+            "stocks": {},
+        }
+
+        known = [
+            "salmoncat.prn",
+            "salmonabd.prn",
+            "salmonesc.prn",
+            "salmontrm.prn",
+            "salmonohr.prn",
+            "salmonlim.prn",
+            "salmonsim.prn",
+            "salmontim.prn",
+            "salmonrt.prn",
+            "salmoncoh.prn",
+            "salmonthr.prn",
+        ]
+        for prn in glob.glob(dir + "/*.prn", recursive=False):
+            if not os.path.basename(prn) in known:
+                id = os.path.basename(prn)[6:9]
+                stock = self.load_stock(prn)
+                for k, year in stock.items():
+                    for fishery in year:
+                        fishery = list(fishery)
+                        fishery[0] = self.fisheries[fishery[0] - 1].name
+                results["stocks"][id] = stock
+        shutil.rmtree(dir)
+        return (res, results)
 
 
 class FisheryBuilder:
     def __init__(self, sim, config=None):
+        """
+        attributes
+        name -> uh
+        ocean_net -> is an ocean net fishery
+        exploits -> exploitation rates per stock
+        terminal -> is terminal fishery for x stock
+        policy -> "detailed Fishery Policy (Harvest Rate) scalars that alter the impact of a given fishery on the stocks on a year-by-year basis."
+        pnv - > proportions non vulnerable (by year is TODO)
+        """
         if config:
             self.__dict__ = config
         self.sim = sim
@@ -575,31 +603,28 @@ class FisheryBuilder:
         return self.sim.fisheries[-1]
 
 
-"""
-attributes:
-name
-hatchery_n(ame)
-abbreviation
-hatchery_flag
-msh_flag
-msy_esc
-param
-idl
-conversion_factor
-smolt
-smolt_changes
-abundances
-ev_scalars + log_p
-maturation_rate(s)
-adult_equivalent(s)
-maturation_by_year
-max_proportion
-"""
-
-
 class StockBuilder:
     def __init__(self, sim, config=None):
-        # do something with config
+        """
+        attributes:
+        name -> stock name
+        hatchery_n(ame) -> name for stock hatchery
+        abbreviation -> stock abbreviation
+        hatchery_flag -> is hatchery
+        msh_flag -> msh escapement flag - 1 truncates at max, 0 truncates at optimum
+        msy_esc -> estimate of msy escapement
+        param -> production parameter A
+        idl -> inter-dam-loss rate for calibration runs
+        conversion_factor -> age 2 to 1 conversion factor
+        smolt -> smolt to age 1 survival
+        smolt_changes -> smolt to age 1 survival rate
+        abundances -> initial cohort abundances (ages 2, 3, 4, 5)
+        maturation_rate(s) -> maturation rates (ages 2, 3, 4, 5)
+        adult_equivalent(s) -> adult equivalent factors (ages 2, 3, 4, 5)
+        maturation_by_year -> maturation rates (ages 2, 3, 4) per year + adult equivalent factors (ages 2, 3, 4) per year
+        ev_scalars + log_p -> environmental variability scalars + logarithmic stuff (for monte carlo sim)
+        max_proportion -> Maximum proportion of spawners that can be used forbroodstock (used for supplementation)
+        """
         if config:
             self.__dict__ = config
         self.rates = []
@@ -686,15 +711,15 @@ class StockBuilder:
         else:
             self.log_p = list(argv)
 
-    """
-    [ # years
-        (241,532), # rate, equivalent
-        ...
-    ]
-    """
-
     @builder
     def maturation_by_year(self, *argv):
+        """
+        [ # years
+            (241,532), # rate, equivalent for age 2
+            (241,532), # age 3
+            (241,532) # age 4
+        ]
+        """
         if isinstance(argv[0], list):
             self.maturation_by_year = list
         elif isinstance(argv[0], tuple):
@@ -730,9 +755,9 @@ class StockBuilder:
             self.policies += [[]] * ((year + 1) - len(self.policies))
         #    print("l" + str(list))
         #    print(self.policies)
-        print(list)
+        # print(list)
         self.policies[year].append(list)
-        print(self.policies)
+        # print(self.policies)
 
     #    print('p' + str(self.policies))
 
@@ -741,8 +766,6 @@ class StockBuilder:
         self.index = len(sim.stocks) - 1
         return self.sim.stocks[-1]
 
-
-sim = Sim()
 
 stock_config = {
     "name": "Salmon Institute T",
@@ -762,6 +785,16 @@ stock_config = {
     "age_factor": 2.0,
 }
 
+fishery_config = {
+    "name": "Python T",
+    "proportions": [0.1, 0.2, 0.3, 0.4],
+    "ocean_net": False,
+    "exploitations": [("SIR", [4, 3, 2, 1])],
+    "policy": [0.8] * 39,
+    "terminal": True,
+}
+
+# sim = Sim()
 # stock = StockBuilder(sim,config=stock_config).build()
-# fishery = FisheryBuilder(sim).name("Python T").pnv(0.1,0.2,0.3,0.4).ocean(False).exploits([("SIR",[4,3,2,1])]).policy([0.8] * 39).terminal(True).build()
-# print(sim.run(''))
+# fishery = FisheryBuilder(sim,config=fishery_config).build()
+# pprint.pprint(sim.run("/home/alisw/Downloads/CRiSP Blaseball/crisphv3_blaseball.exe"))
