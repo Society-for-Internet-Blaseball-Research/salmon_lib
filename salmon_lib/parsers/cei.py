@@ -88,18 +88,18 @@ def parse_cei(file):
             year = int(lines[line_i].split(",")[1].strip())
             ceiling = int(lines[line_i].split(",")[0].strip())
             comment = lines[line_i].split(",")[2].strip()
-            fishery["ceilings"].append({
-                "year": year,
-                "ceiling": ceiling,
-                "comment": comment
-            })
+            fishery["ceilings"].append(
+                {"year": year, "ceiling": ceiling, "comment": comment}
+            )
             line_i += 1
 
         # get number of years to force ceilings
         fishery["num_force"] = int(lines[line_i].split(",")[0].strip())
         line_i += 1
         # get years to force ceilings
-        fishery["ceil_change_years"] = [int(year) for year in lines[line_i].split(",")[0].split()]
+        fishery["ceil_change_years"] = [
+            int(year) for year in lines[line_i].split(",")[0].split()
+        ]
         line_i += 1
 
         fisheries.append(fishery)
