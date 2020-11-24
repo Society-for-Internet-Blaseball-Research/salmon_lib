@@ -42,7 +42,7 @@ def parse_cei(file):
         "num_ceil_fisheries": int(lines[4].split(",")[0].strip()),
         "num_ceil_changes": int(lines[5].split(",")[0].strip()),
         "ceil_change_years": [int(year) for year in lines[6].split(",")[0].split()],
-        "fishery": [],
+        "fisheries": [],
     }
 
     # now for the fun stuff. From some file-surgery testing, I believe that
@@ -51,14 +51,57 @@ def parse_cei(file):
     # line for every year from start_base to the end of ceil_change_years.
     # I think. Or, uh...well, let's just say for now that it expects the end of
     # ceil_change_years to be the last year listed.
-    i = 7
-    while i < len(lines):
-        i += 1
-        # it's too late to write code. notes: go through and populate a dict?
-        # fishery = {
-        # id = (int),
-        # years = [{year: int, catch: int, note: str}, ...]
-        # num_force: int,
-        # years_force: [list of ints, len=num_force]
-        # }
+
+    finalyear = ceil["ceil_change_years"][-1]
+    line_i = 7  # time to step through painfully and build each fishery dict
+    for fish_i in range(cei["num_ceil_fisheries"]):
+        # get the header (for completeness) and the fishery ID
+        fishery = {}
+        fishery["header"] = lines[line_i].strip()
+        line_i += 1
+        # I'm throwing away the "Nth Fishery Number" comment. If that matters,
+        # I'm going to be upset with this file format
+        fishery["id"] = int(lines[line_i].split(",")[0].strip())
+        line_i += 1
+
+        """
+        fishery data format:
+        fishery = {
+        "header": "........... S.E. Alaska Troll (excluding hatchery add-ON)..."
+        "id": 1
+        "ceilings": [
+            {
+                "year": 1979,
+                "ceiling": 338000,
+                "comment": "catch"
+            },
+            ...
+        ]
+        "num_force": 10,
+        "years_force": [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994]
+        }
+        """
+        # time to loop to get the catch ceiling list
+        fishery["ceilings"] = []
+        year = cei["start_base"]  # initialization default
+        while year < finalyear:
+            year = int(lines[line_i].split(",")[1].strip())
+            ceiling = int(lines[line_i].split(",")[0].strip())
+            comment = lines[line_i].split(",")[2].strip()
+            fishery["ceilings"].append({
+                "year": year,
+                "ceiling": ceiling,
+                "comment": comment
+            })
+            line_i += 1
+
+        # get number of years to force ceilings
+        fishery["num_force"] = int(lines[line_i].split(",")[0].strip())
+        line_i += 1
+        # get years to force ceilings
+        fishery["ceil_change_years"] = [int(year) for year in lines[line_i].split(",")[0].split()]
+        line_i += 1
+
+        fisheries.append(fishery)
+
     return cei
