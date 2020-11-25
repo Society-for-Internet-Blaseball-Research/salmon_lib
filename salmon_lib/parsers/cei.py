@@ -27,11 +27,38 @@ Fig. 2.11 looks like this:
         1985 1986 1987 1988 1989 1990 1991 1992 , years to force
 .................. (etc for remaining Fisheries)
 
-The actual base.cei file looks different mainly in whitespace...
-
+The actual base.cei file looks different mainly in whitespace.
 """
 
-
+"""
+.cei data format for reading and writing:
+{
+    "start_base": 1979,
+    "end_base": 1984,
+    "start_ceil": 1985,
+    "end_ceil": 2017,
+    "num_ceil_fisheries": 16,
+    "num_ceil_changes": 13,
+    "ceil_change_years": [1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
+    "fisheries": [
+        {
+            "header": "........... S.E. Alaska Troll (excluding hatchery add-ON)..."
+            "id": 1
+            "ceilings": [
+                {
+                    "year": 1979,
+                    "ceiling": 338000,
+                    "comment": "catch"
+                },
+                ...
+            ]
+            "num_force": 10,
+            "years_force": [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994]
+        },
+        ...
+    ]
+}
+"""
 def parse_cei(file):
     lines = file.readlines()
     cei = {
@@ -64,23 +91,6 @@ def parse_cei(file):
         fishery["id"] = int(lines[line_i].split(",")[0].strip())
         line_i += 1
 
-        """
-        fishery data format:
-        fishery = {
-        "header": "........... S.E. Alaska Troll (excluding hatchery add-ON)..."
-        "id": 1
-        "ceilings": [
-            {
-                "year": 1979,
-                "ceiling": 338000,
-                "comment": "catch"
-            },
-            ...
-        ]
-        "num_force": 10,
-        "years_force": [1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994]
-        }
-        """
         # time to loop to get the catch ceiling list
         fishery["ceilings"] = []
         year = cei["start_base"]  # initialization default
@@ -105,3 +115,7 @@ def parse_cei(file):
         cei["fisheries"].append(fishery)
 
     return cei
+
+
+def write_cei(data, file):
+    pass
