@@ -107,7 +107,7 @@ def parse_cei(file):
         fishery["num_force"] = int(lines[line_i].split(",")[0].strip())
         line_i += 1
         # get years to force ceilings
-        fishery["ceil_change_years"] = [
+        fishery["years_force"] = [
             int(year) for year in lines[line_i].split(",")[0].split()
         ]
         line_i += 1
@@ -117,5 +117,24 @@ def parse_cei(file):
     return cei
 
 
+# now I get to make my own whitespace decisions. If you think they're bad,
+# you should see the original base.cei file
 def write_cei(data, file):
-    pass
+    file.write(f"{data['start_base']:<19}, Start of base period\n")
+    file.write(f"{data['end_base']:<19}, End of base period\n")
+    file.write(f"{data['start_ceil']:<19}, First year of ceiling management\n")
+    file.write(f"{data['end_ceil']:<19}, Last year for ceiling management\n")
+    file.write(f"{data['num_ceil_fisheries']:<19}, Number of fisheries with ceilings\n")
+    file.write(f"{data['num_ceil_changes']:<19}, Number of ceiling level changes\n")
+    file.write(" ".join([f"{year}" for year in data['ceil_change_years']]) +
+               ", Years to change ceilings\n")
+
+    for fishery in data["fisheries"]:
+        file.write(f"{fishery['header']}\n")
+        file.write(f"{fishery['id']:<19}, Nth Fishery Number\n")
+        for year in fishery["ceilings"]:
+            file.write(f"{year['ceiling']:>8}  , {year['year']}, {year['comment']}\n")
+        file.write(f"  {fishery['num_force']:<8}, Number of years to force ceilings\n")
+        file.write("  " +
+                   " ".join([f"{year}" for year in fishery['years_force']]) +
+                   ", Years to force ceilings\n")
