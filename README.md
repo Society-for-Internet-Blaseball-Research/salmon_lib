@@ -8,6 +8,7 @@
 
 ### Tools
 **crisp_map** - builds a CRiSP map file from svg data
+(requires installing dependencies with `pip install -r requirements.txt`)
 ```
 Usage:
   python -m salmon_lib.crisp_map > map.dat
