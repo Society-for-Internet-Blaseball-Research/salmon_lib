@@ -43,9 +43,10 @@ Usage:
 - `.bse`
 - `.idl`
 - `.enh`
+- `.cei`
+- `.fp`
 - `.prn` (read-only)
 
 **missing formats**
-- `.cei` (in progress)
 - `.config`
 - `.monte`
