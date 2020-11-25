@@ -59,6 +59,8 @@ The actual base.cei file looks different mainly in whitespace.
     ]
 }
 """
+
+
 def parse_cei(file):
     lines = file.readlines()
     cei = {
