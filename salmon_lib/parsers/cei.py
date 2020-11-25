@@ -128,8 +128,10 @@ def write_cei(data, file):
     file.write(f"{data['end_ceil']:<19}, Last year for ceiling management\n")
     file.write(f"{data['num_ceil_fisheries']:<19}, Number of fisheries with ceilings\n")
     file.write(f"{data['num_ceil_changes']:<19}, Number of ceiling level changes\n")
-    file.write(" ".join([f"{year}" for year in data['ceil_change_years']]) +
-               ", Years to change ceilings\n")
+    file.write(
+        " ".join([f"{year}" for year in data["ceil_change_years"]])
+        + ", Years to change ceilings\n"
+    )
 
     for fishery in data["fisheries"]:
         file.write(f"{fishery['header']}\n")
@@ -137,6 +139,8 @@ def write_cei(data, file):
         for year in fishery["ceilings"]:
             file.write(f"{year['ceiling']:>8}  , {year['year']}, {year['comment']}\n")
         file.write(f"  {fishery['num_force']:<8}, Number of years to force ceilings\n")
-        file.write("  " +
-                   " ".join([f"{year}" for year in fishery['years_force']]) +
-                   ", Years to force ceilings\n")
+        file.write(
+            "  "
+            + " ".join([f"{year}" for year in fishery["years_force"]])
+            + ", Years to force ceilings\n"
+        )
