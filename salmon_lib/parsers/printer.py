@@ -39,11 +39,11 @@ def parse_abd(file):
     curr_fishery = ""
     for line in file:
         if '"' in line:
-            curr_fishery = line.strip('"').strip()
+            curr_fishery = line.strip('" \n')
             fisheries[curr_fishery] = []
         else:
             row = line.split()
-            fisheries[curr_fishery] = (row[0], row[1])
+            fisheries[curr_fishery].append((row[0], row[1]))
     return fisheries
 
 
