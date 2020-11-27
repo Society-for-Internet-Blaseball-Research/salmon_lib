@@ -4,7 +4,7 @@ from mistletoe.base_renderer import BaseRenderer
 from mistletoe.ast_renderer import ASTRenderer
 from mistletoe.block_token import Document
 from mistletoe.span_token import RawText
-from salmon_lib.zhp import ZHP, Page, Line, Style
+from salmon_lib.zhp import ZHP, Page, Line, Image, Style
 from functools import reduce
 
 flatten = lambda t: [item for sublist in t for item in sublist]
@@ -12,16 +12,22 @@ flatten = lambda t: [item for sublist in t for item in sublist]
 
 class Gatherer(BaseRenderer):
     def render_image(self, token):
-        pass
+        return set([token.src])
+
+    def render_raw_text(self, token):
+        return set()
 
     def render_inner(self, token):
-        pass
+        if not hasattr(token, "children"):
+            return set()
+        return set.union(*map(self.render, token.children))
 
 
 class PageRenderer(BaseRenderer):
-    def __init__(self, zhp):
+    def __init__(self, zhp, image_map):
         super().__init__()
         self.zhp = zhp
+        self.image_map = image_map
 
     # span tokens: return a Line
     def render_raw_text(self, token):
@@ -30,10 +36,8 @@ class PageRenderer(BaseRenderer):
 
     def render_style(self, token, type, extra_info=0):
         line = self.render_inner_line(token)
-        start = 0
-        end = len(line.text)
         line.styles.append(
-            Style(start=start, end=end, type=type, extra_info=extra_info)
+            Style(start=0, end=len(line.text), type=type, extra_info=extra_info)
         )
         return line
 
@@ -47,8 +51,12 @@ class PageRenderer(BaseRenderer):
         return self.render_style(token, type=Style.STYLE_MONO)
 
     def render_image(self, token):
-        print(token.src)
-        raise NotImplementedError  # TODO
+        image_id = self.image_map[token.src]
+        line = Line(text=f" {image_id} ".encode("cp1252"))
+        line.styles.append(
+            Style(start=1, end=len(line.text) - 1, type=Style.STYLE_IMAGE)
+        )
+        return line
 
     def render_link(self, token):
         raise NotImplementedError  # TODO
@@ -199,7 +207,17 @@ if __name__ == "__main__":
         m = f.read()
 
     print(mistletoe.markdown(m, ASTRenderer))
-    with PageRenderer(zhp) as renderer:
+    with Gatherer() as renderer:
+        images = renderer.render(Document(m))
+    image_id = max(zhp.images) + 1
+    image_map = {}
+    for i in images:
+        with open(i, "rb") as f:
+            zhp.images[image_id] = Image(data=f.read())
+        image_map[i] = image_id
+        image_id += 1
+
+    with PageRenderer(zhp, image_map) as renderer:
         renderer.compile(m, "title", 1337)
 
     with open(args.o, "wb") as f:
