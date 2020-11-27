@@ -12,6 +12,7 @@ flatten = lambda t: [item for sublist in t for item in sublist]
 
 class Gatherer(BaseRenderer):
     def render_image(self, token):
+        assert token.src.lower().endswith(".gif"), "only GIF images supported"
         return set([token.src])
 
     def render_raw_text(self, token):
