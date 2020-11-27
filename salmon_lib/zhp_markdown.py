@@ -10,6 +10,14 @@ from functools import reduce
 flatten = lambda t: [item for sublist in t for item in sublist]
 
 
+class Gatherer(BaseRenderer):
+    def render_image(self, token):
+        pass
+
+    def render_inner(self, token):
+        pass
+
+
 class PageRenderer(BaseRenderer):
     def __init__(self, zhp):
         super().__init__()
@@ -39,7 +47,8 @@ class PageRenderer(BaseRenderer):
         return self.render_style(token, type=Style.STYLE_MONO)
 
     def render_image(self, token):
-        raise NotImplementedError
+        print(token.src)
+        raise NotImplementedError  # TODO
 
     def render_link(self, token):
         raise NotImplementedError  # TODO
@@ -87,7 +96,7 @@ class PageRenderer(BaseRenderer):
         return lines
 
     def render_thematic_break(self, token):
-        return [Line.make_hrule()]
+        return [Line(unknown_fields=Line.FIELDS_HRULE)]
 
     def render_list_item(self, token):
         return self.render_inner(token)
@@ -95,23 +104,20 @@ class PageRenderer(BaseRenderer):
     def render_list(self, token):
         lines = self.render_inner(token)[0]  # ???
         if token.start is not None:
-            first_line_fields = [0, 1, 1, 0, 1, 0, 0, 1]
-            continuation_fields = [0, 1, 1, 0, 1, 0, 0, 0]
+            first_line_fields = Line.FIELDS_OL_FIRST
+            continuation_fields = Line.FIELDS_OL_CONT
             type = Style.STYLE_OL
         else:
-            first_line_fields = [0, 1, 1, 1, 0, 0, 0, 1]
-            continuation_fields = [0, 1, 1, 1, 0, 0, 0, 0]
+            first_line_fields = Line.FIELDS_UL_FIRST
+            continuation_fields = Line.FIELDS_UL_CONT
             type = Style.STYLE_UL
-        print(lines)
         for j in lines:
             for i, l in enumerate(j):
-                print(l)
                 if i == 0:
                     l.unknown_fields = first_line_fields
                 else:
                     l.unknown_fields = continuation_fields
                 l.styles.append(Style(start=0, end=len(l.text), type=Style.STYLE_OL))
-        print(lines)
         return flatten(lines)
 
     def render_paragraph(self, token):
@@ -124,8 +130,6 @@ class PageRenderer(BaseRenderer):
             return reduce(lambda x, y: x + y, line)
 
     def render_inner_line(self, token):
-        print([self.render(i) for i in token.children])
-        print(token.children)
         return self.reduce_line([self.render(i) for i in token.children])
 
     def render_inner(self, token):

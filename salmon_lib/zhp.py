@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace, field
-from typing import List
+from typing import List, Tuple
 import struct
 
 
@@ -87,12 +87,14 @@ class Style(Serializable):
 @dataclass
 class Line(Serializable):
     text: bytes = b""
-    unknown_fields: List[int] = field(default_factory=lambda: [0, 0, 0, 0, 0, 0, 0, 0])
+    unknown_fields: Tuple[int, ...] = (0, 0, 0, 0, 0, 0, 0, 0)
     styles: List[Style] = field(default_factory=list)
 
-    @classmethod
-    def make_hrule(cls):
-        return cls(unknown_fields=[1, 0, 0, 0, 0, 1, 0, 0])
+    FIELDS_HRULE = (1, 0, 0, 0, 0, 1, 0, 0)
+    FIELDS_OL_FIRST = (0, 1, 1, 0, 1, 0, 0, 1)
+    FIELDS_OL_CONT = (0, 1, 1, 0, 1, 0, 0, 0)
+    FIELDS_UL_FIRST = (0, 1, 1, 1, 0, 0, 0, 1)
+    FIELDS_UL_CONT = (0, 1, 1, 1, 0, 0, 0, 0)
 
     @classmethod
     def parse(cls, b):
@@ -100,6 +102,7 @@ class Line(Serializable):
         unknown_fields = []
         for j in range(8):
             unknown_fields.append(b.read_int())
+        unknown_fields = tuple(unknown_fields)
         text = b.read(text_length)
         styles = []
         while True:
