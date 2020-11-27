@@ -39,11 +39,11 @@ def parse_abd(file):
     curr_fishery = ""
     for line in file:
         if '"' in line:
-            curr_fishery = line.strip('"').strip()
+            curr_fishery = line.strip('" \n')
             fisheries[curr_fishery] = []
         else:
             row = line.split()
-            fisheries[curr_fishery] = (row[0], row[1])
+            fisheries[curr_fishery].append((row[0], row[1]))
     return fisheries
 
 
@@ -70,12 +70,24 @@ def parse_rt(file):
     return (pre_terminal, terminal)
 
 
+"""
+    index: {
+        year: stat
+    }
+"""
+
+
 def parse_prn(file):
-    years = {}
+    stats = {}
+
     for line in file:
         row = line.split()
         year = int(row[0])
-        years[year] = []
+
+        if len(stats) == 0:
+            for i in range(0, len(row) - 1):
+                stats[i] = {}
+
         for i, stlat in enumerate(row[1:]):
             val = 0
             try:
@@ -86,5 +98,6 @@ def parse_prn(file):
                 except ValueError:
                     val = stlat  # wow this is cursed
 
-            years[year].append((i, val))
-    return years
+            stats[i][year] = val
+
+    return stats
