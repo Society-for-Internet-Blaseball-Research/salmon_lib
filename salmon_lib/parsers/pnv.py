@@ -18,7 +18,7 @@ def parse_pnv(file):
         "fishery": int(next(file)),
         "first_year": int(next(file)),
         "last_year": int(next(file)),
-        "ages": [],  # 4 age rows; each collumn is the value for a year. ages go 2-5.
+        "ages": [],  # 4 age rows; each column is value for a year. ages go 2-5
     }
 
     for line in file:
@@ -26,6 +26,7 @@ def parse_pnv(file):
         try:
             pnv["ages"].append([float(year) for year in row])
         except ValueError:
+            pnv["ages"].pop()  # remove empty last entry in list
             break
 
     return pnv
