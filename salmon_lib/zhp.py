@@ -121,7 +121,6 @@ class Line(Serializable):
         return b
 
     # takes the unknown_fields of the left argument
-    # mutability is hard
     def __add__(self, other):
         text = self.text + other.text
         unknown_fields = self.unknown_fields
