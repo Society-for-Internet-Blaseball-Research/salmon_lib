@@ -4,10 +4,18 @@ from mistletoe.base_renderer import BaseRenderer
 from mistletoe.ast_renderer import ASTRenderer
 from mistletoe.block_token import Document
 from mistletoe.span_token import RawText
-from salmon_lib.zhp import ZHP, Page, Line, Image, Style
+from salmon_lib.zhp import ZHP, Page, Line, Image, Style, Link, TOCEntry
 from functools import reduce
 
 flatten = lambda t: [item for sublist in t for item in sublist]
+
+
+def title_to_page_name(title):
+    if type(title) == bytes:
+        title = title.decode("cp1252")
+    if ".html" in title:
+        return title.encode("cp1252")
+    return f"mapinfo.html#{title.replace(' ','')}".encode("cp1252")
 
 
 class Gatherer(BaseRenderer):
@@ -25,10 +33,11 @@ class Gatherer(BaseRenderer):
 
 
 class PageRenderer(BaseRenderer):
-    def __init__(self, zhp, image_map):
+    def __init__(self, zhp, image_map, filename_map):
         super().__init__()
         self.zhp = zhp
         self.image_map = image_map
+        self.filename_map = filename_map
 
     # span tokens: return a Line
     def render_raw_text(self, token):
@@ -60,7 +69,15 @@ class PageRenderer(BaseRenderer):
         return line
 
     def render_link(self, token):
-        raise NotImplementedError  # TODO
+        line = self.render_inner_line(token)
+        if token.target in self.filename_map:
+            target = self.filename_map[token.target]
+        else:
+            target = token.target.encode("cp1252")
+        for i in self.zhp.links.links:
+            if i.link == target:
+                return self.render_style(token, type=Style.STYLE_LINK, extra_info=i.id)
+        raise RuntimeError(f"Could not find link {token.target}")
 
     def render_auto_link(self, token):
         return self.render_inner_line(token)
@@ -69,13 +86,13 @@ class PageRenderer(BaseRenderer):
         return self.render_inner_line(token)
 
     def render_strikethrough(self, token):
-        raise NotImplementedError("No strikethrough support")
+        raise RuntimeError("No strikethrough support")
 
     def render_table_row(self, token):
-        raise NotImplementedError("No table support")
+        raise RuntimeError("No table support")
 
     def render_table_cell(self, token):
-        raise NotImplementedError("No table support")
+        raise RuntimeError("No table support")
 
     # block tokens: return a list of Lines
     def render_block_code(self, token):
@@ -160,21 +177,18 @@ class PageRenderer(BaseRenderer):
         return flatten([self.render(child) for child in token.children])
 
     def render_quote(self, token):
-        raise NotImplementedError("No quote support")
+        raise RuntimeError("No quote support")
 
     def render_table(self, token):
-        raise NotImplementedError("No table support")
+        raise RuntimeError("No table support")
 
     # TODO: preprocess links and images
-    def compile(self, markdown, title, page_id):
-        page_name = f"mapinfo.html#{title.replace(' ','')}".encode("cp1252")
-        title = title.encode("cp1252")
+    def compile(self, markdown, title, page_name, page_id):
         lines = self.render(Document(markdown))
-        print(lines)
         page = Page(
             title=title,
             title_id=page_id,
-            page_name=b"page_name",
+            page_name=page_name,
             page_id=page_id,
             lines=lines,
         )
@@ -193,33 +207,51 @@ if __name__ == "__main__":
         "-o", default="crisp2_new.zhp", metavar="OUTFILE", help="output zhp filename"
     )
     parser.add_argument(
-        "markdown", default=argparse.SUPPRESS, help="Markdown file to add to zhp"
+        "toc",
+        default=argparse.SUPPRESS,
+        help="TOC of markdown files: `[title], [filename]` pairs, 1 per each line",
     )
 
     args = parser.parse_args()
-    print(args)
 
     with open(args.i, "rb") as f:
         zhp = ZHP.parse(f.read())
 
-    print(zhp.pages[1])
+    filename_map = {}
 
-    with open(args.markdown) as f:
-        m = f.read()
+    pages = []
+    page_id = max(zhp.pages) + 1
+    for line in open(args.toc):
+        title, filename = [i.strip() for i in line.split(",")]
+        print(f"adding page {title} ({filename})")
+        title = title.encode("cp1252")
+        page_name = title_to_page_name(title)
+        with open(filename) as f:
+            m = f.read()
+        filename_map[filename] = page_name
+        pages.append((m, title, page_name, page_id))
+        zhp.links.links.append(Link(link=page_name, id=page_id))
+        zhp.toc.toc.append(TOCEntry(title=title, id=page_id))
+        page_id += 1
 
-    print(mistletoe.markdown(m, ASTRenderer))
-    with Gatherer() as renderer:
-        images = renderer.render(Document(m))
     image_id = max(zhp.images) + 1
     image_map = {}
+    images = set()
+
+    for m, _, _, _ in pages:
+        with Gatherer() as renderer:
+            images |= renderer.render(Document(m))
+
     for i in images:
+        print(f"adding image {i}")
         with open(i, "rb") as f:
             zhp.images[image_id] = Image(data=f.read())
         image_map[i] = image_id
         image_id += 1
 
-    with PageRenderer(zhp, image_map) as renderer:
-        renderer.compile(m, "title", 1337)
+    for m, title, page_name, page_id in pages:
+        with PageRenderer(zhp, image_map, filename_map) as renderer:
+            renderer.compile(m, title, page_name, page_id)
 
     with open(args.o, "wb") as f:
         f.write(zhp.serialize())
