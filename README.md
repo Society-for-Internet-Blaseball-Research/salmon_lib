@@ -22,9 +22,15 @@ Usage:
   python -m salmon_lib.bound_patcher
 ```
 
+**zhp_markdown** - compiles and adds markdown files to a `.zhp` file
+```
+Usage:
+  python -m salmon_lib.zhp_markdown -h
+```
+
 ### Credits & contributors
 - **[The CRiSP Harvest Team](http://www.cbr.washington.edu/analysis/archive/harvest/crispharvest)**
-- **[ubuntor](https://github.com/ubuntor), zhp module, map bound patcher**
+- **[ubuntor](https://github.com/ubuntor), zhp module, map bound patcher, zhp_markdown**
 - **[alisww](https://github.com/alisww), parsers+writers**
 - **[robbyblum](https://github.com/robbyblum), fp parser+writer, cei parser+writer**
 - **[dannybd](https://github.com/dannybd), CRiSP map data, parser, and CRiSP Harvest Simulator Simulator**
