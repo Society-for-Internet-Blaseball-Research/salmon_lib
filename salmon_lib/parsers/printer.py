@@ -21,7 +21,7 @@ def parse_stock_file(file):
         else:
             year = int(row[0])
             for i, rate in enumerate(row[1:]):
-                fisheries[cols[i]].append((year,int(rate)))
+                fisheries[cols[i]].append((year, int(rate)))
     return fisheries
 
 

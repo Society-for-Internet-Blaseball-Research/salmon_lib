@@ -435,7 +435,7 @@ class Sim:
             with open(file) as f:
                 res = {}
                 stks = parse_stock_file(f)
-                for k,v in stks.items():
+                for k, v in stks.items():
                     res[self.fisheries[k].name] = v
                 return res
         else:
@@ -745,12 +745,12 @@ class Stock:
 #     for x in range(0,10000):
 #         print(f"Run {x}")
 #         start = time.time()
-        #   with open('sibr.json') as f:
-        #     config = json.loads(f.read())
-        #     json_load = time.time()
-        #     sim = Sim()
-        #     sim.from_sibr_conf(config)
-        #     res = sim.run('')
+#   with open('sibr.json') as f:
+#     config = json.loads(f.read())
+#     json_load = time.time()
+#     sim = Sim()
+#     sim.from_sibr_conf(config)
+#     res = sim.run('')
 #             json_build = time.time()
 
 #             sim_end = time.time()
