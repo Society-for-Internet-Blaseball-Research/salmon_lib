@@ -1,7 +1,7 @@
 """
 {
-    1989: [
-        (fishery id, statistic),
+    'fishery id': [
+        (year, stat)
         ...
     ],
     ...
@@ -10,19 +10,19 @@
 
 
 def parse_stock_file(file):
+    fisheries = {}
     cols = []
-    years = {}
     for line in file:
         row = line.split()
         if row[0] == "Year":
             for fishery in row[1:]:
+                fisheries[int(fishery)] = []
                 cols.append(int(fishery))
         else:
             year = int(row[0])
-            years[year] = []
             for i, rate in enumerate(row[1:]):
-                years[year].append((cols[i], int(rate)))
-    return years
+                fisheries[cols[i]].append((year,int(rate)))
+    return fisheries
 
 
 """

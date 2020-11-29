@@ -296,12 +296,7 @@ class Sim:
         for prn in glob.glob(dir + "/*.prn", recursive=False):
             if not os.path.basename(prn) in known:
                 id = os.path.basename(prn)[6:9]
-                stock = self.load_stock(prn)
-                for k, year in stock.items():
-                    for fishery in year:
-                        fishery = list(fishery)
-                        fishery[0] = self.fisheries[fishery[0] - 1].name
-                results["stocks"][id] = stock
+                results["stocks"][id] = self.load_stock(prn)
         shutil.rmtree(dir)
         return (res, results)
 
@@ -438,7 +433,11 @@ class Sim:
     def load_stock(self, file):
         if os.path.isfile(file):
             with open(file) as f:
-                return parse_stock_file(f)
+                res = {}
+                stks = parse_stock_file(f)
+                for k,v in stks.items():
+                    res[self.fisheries[k].name] = v
+                return res
         else:
             return None
 
@@ -746,13 +745,14 @@ class Stock:
 #     for x in range(0,10000):
 #         print(f"Run {x}")
 #         start = time.time()
-#         with open('sibr.json') as f:
-#             config = json.loads(f.read())
-#             json_load = time.time()
-#             sim = Sim()
-#             sim.from_sibr_conf(config)
+        #   with open('sibr.json') as f:
+        #     config = json.loads(f.read())
+        #     json_load = time.time()
+        #     sim = Sim()
+        #     sim.from_sibr_conf(config)
+        #     res = sim.run('')
 #             json_build = time.time()
-#             res = sim.run('')
+
 #             sim_end = time.time()
 
 #             load_times.append(json_load - start)
