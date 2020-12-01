@@ -79,7 +79,7 @@ total exploitation rates -> ?thr.prn; by stock
 incidental mortality rates -> ?lim.prn, ?sim.prn, ?tim.prn; by fishery?
 TOTAL MORTALITIES BY STOCK & FISHERY - > ?[stock abbreviation].prn
 stock prop -> none?
-rt -> ?rt.prn 
+rt -> ?rt.prn
 the rest of the report section is ???
 harvest rate -> possibly ?coh.prn and i just missed it. the code is better at generating configs than me, frankly
 something -> ?trn.prn
@@ -735,35 +735,39 @@ class Stock:
         return self.sim.stocks[-1]
 
 
-# if __name__ == "__main__":
-#     env_times = []
-#     sim_times = []
-#     fetch_times = []
-#     load_times = []
-#     build_times = []
-#     sim_totals = []
+if __name__ == "__main__":
+    env_times = []
+    sim_times = []
+    fetch_times = []
+    load_times = []
+    build_times = []
+    sim_totals = []
 
-#     for x in range(0,10000):
-#         print(f"Run {x}")
-#         start = time.time()
-#         with open('sibr.json') as f:
-#             config = json.loads(f.read())
-#             json_load = time.time()
-#             sim = Sim()
-#             sim.from_sibr_conf(config)
-#             json_build = time.time()
-#             res = sim.run('')
-#             sim_end = time.time()
+    # for x in range(0,10000):
+    # print(f"Run {x}")
+    start = time.time()
+    with open('sibr.json') as f:
+        config = json.loads(f.read())
+        json_load = time.time()
+        sim = Sim()
+        sim.from_sibr_conf(config)
+        json_build = time.time()
+        res = sim.run('/Users/rlb77/Documents/SIBR/CRiSP Harvest/crisphv3.exe')
+        sim_end = time.time()
 
-#             load_times.append(json_load - start)
-#             build_times.append(json_build - json_load)
-#             sim_totals.append(sim_end - json_build)
-#             env_times.append(res[2][0])
-#             sim_times.append(res[2][1])
-#             fetch_times.append(res[2][2])
+        load_times.append(json_load - start)
+        build_times.append(json_build - json_load)
+        sim_totals.append(sim_end - json_build)
+        print(sim_end - start)
+        print(json_load - start)
+        print(json_build - json_load)
+        print(sim_end - json_build)
+        # env_times.append(res[2][0])
+        # sim_times.append(res[2][1])
+        # fetch_times.append(res[2][2])
 
-#     print(f"Env times: Avg {statistics.mean(env_times)}; Mean {statistics.median(sorted(env_times))}")
-#     print(f"Sim Run times: Avg {statistics.mean(sim_times)}; Mean {statistics.median(sorted(sim_times))}")
-#     print(f"Fetch times: Avg {statistics.mean(fetch_times)}; Mean {statistics.median(sorted(fetch_times))}")
-#     print(f"Load times: Avg {statistics.mean(load_times)}; Mean {statistics.median(sorted(load_times))}")
-#     print(f"Build times: Avg {statistics.mean(build_times)}; Mean {statistics.median(sorted(build_times))}")
+    # print(f"Env times: Avg {statistics.mean(env_times)}; Mean {statistics.median(sorted(env_times))}")
+    # print(f"Sim Run times: Avg {statistics.mean(sim_times)}; Mean {statistics.median(sorted(sim_times))}")
+    # print(f"Fetch times: Avg {statistics.mean(fetch_times)}; Mean {statistics.median(sorted(fetch_times))}")
+    # print(f"Load times: Avg {statistics.mean(load_times)}; Mean {statistics.median(sorted(load_times))}")
+    # print(f"Build times: Avg {statistics.mean(build_times)}; Mean {statistics.median(sorted(build_times))}")
