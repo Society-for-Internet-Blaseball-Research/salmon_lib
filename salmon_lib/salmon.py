@@ -746,13 +746,13 @@ if __name__ == "__main__":
     # for x in range(0,10000):
     # print(f"Run {x}")
     start = time.time()
-    with open('sibr.json') as f:
+    with open("sibr.json") as f:
         config = json.loads(f.read())
         json_load = time.time()
         sim = Sim()
         sim.from_sibr_conf(config)
         json_build = time.time()
-        res = sim.run('/Users/rlb77/Documents/SIBR/CRiSP Harvest/crisphv3.exe')
+        res = sim.run("/Users/rlb77/Documents/SIBR/CRiSP Harvest/crisphv3.exe")
         sim_end = time.time()
 
         load_times.append(json_load - start)
