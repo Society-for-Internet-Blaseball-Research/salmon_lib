@@ -9,7 +9,6 @@ import glob
 import json
 import time
 import statistics
-import logging
 
 """
 ## .bse:
@@ -174,10 +173,8 @@ class Sim:
         self.stocks = []
         self.fisheries = []
         for stock in data["stocks"]:
-            logging.debug(f"{stock}")
             Stock(self, config=stock).build()
         for fishery in data["fisheries"]:
-            logging.debug(f"{fishery}")
             Fishery(self, config=fishery).build()
 
     def to_sibr_conf(self):
