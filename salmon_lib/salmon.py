@@ -85,10 +85,12 @@ harvest rate -> possibly ?coh.prn and i just missed it. the code is better at ge
 something -> ?trn.prn
 """
 
+
 def without(d, key):
     new_d = d.copy()
     new_d.pop(key)
     return new_d
+
 
 def with_default(main, higher, func):
     if isinstance(main, list):  # main is a list of tuples
@@ -188,8 +190,8 @@ class Sim:
                 "start_year": self.start_year,
                 "end_year": self.end_year,
             },
-            "fisheries": [without(f.__dict__,'sim') for f in self.fisheries],
-            "stocks": [without(s.__dict__,'sim') for s in self.stocks],
+            "fisheries": [without(f.__dict__, "sim") for f in self.fisheries],
+            "stocks": [without(s.__dict__, "sim") for s in self.stocks],
         }
 
     # runs a CRiSP simulation and fetch the results
@@ -266,7 +268,7 @@ class Sim:
         with open(os.path.join(dir, "input/base.mat"), "w", newline="\r\n") as f:
             write_mat(self.build_mat(), f)
 
-        res = subprocess.run([wine_path, crisp_path,'-n'], cwd=dir)
+        res = subprocess.run([wine_path, crisp_path, "-n"], cwd=dir)
 
         results = {
             "catch": self.load_prn(os.path.join(dir, "salmoncat.prn"), by_fishery=True),
