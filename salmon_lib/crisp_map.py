@@ -292,8 +292,8 @@ ALL_TEAMS = [
     {
         "name": "Tokyo Lift",
         "map": "japan",
-        "real_latlong_coord": (35.6681625, 139.600781),
-        "xy": (0.229471, 0.125595),
+        "real_latlong_coord": (35.632068, 139.880868),
+        "xy": (0.232271, 0.125695),
     },
 ]
 
